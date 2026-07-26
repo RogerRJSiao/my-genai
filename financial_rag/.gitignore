@@ -1,0 +1,19 @@
+# Raw / processed data (keep folder structure, ignore actual files)
+data/raw/*/*
+!data/raw/*/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/knowledge_graph/*
+!data/knowledge_graph/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment variables / secrets
+.env
