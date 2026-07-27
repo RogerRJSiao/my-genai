@@ -44,6 +44,60 @@ flowchart LR
     style vision stroke-dasharray: 5 5
 ```
 
+## 新增資料標準作業流程 (SOP)
+
+新資料寫入向量資料庫前，依序執行：
+
+### 1. 放置原始檔案
+
+依照本文件與 README §6 的命名規則，把檔案放到 `data/raw/` 對應的分類/公司資料夾，檔名格式：
+
+```
+{market}_{ticker}_{doc_type}_[{FY年}[Q{季}]_]{YYYYMMDD}[_補充說明].{ext}
+```
+
+例如：`data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q4_20260923.pdf`
+
+### 2. 重新產生 manifest
+
+```bash
+conda activate financial_rag
+python scripts/generate_manifest.py
+```
+
+掃描 `data/raw/` 產生最新的 `data/manifest.json`，新檔案會自動被抓進來，並算出 `parsed_path`／`chunks_path`。
+
+### 3. 執行 page filter（清洗）
+
+```bash
+python -m src.parser.page_filter "data/raw/.../新檔案.pdf"
+```
+
+輸出到 `data/processed/parsed/.../新檔案.json`。
+
+⚠️ **注意**：`page_filter.py` 的章節偵測與頁尾格式是依 `(ticker, doc_type)` 查表分派（`SECTION_STRATEGIES`／`FOOTER_PATTERNS`，見 `src/parser/page_filter.py`）。
+
+- 若是**既有公司**（美光 MU／南亞科 2408／華邦電 2344）的**既有 doc_type**：直接套用現成規則即可。
+- 若是**新公司**或**新 doc_type**：目前會自動退回預設的 `"01."` 樣式偵測，格式不同的話 `section` 可能抓不到或抓錯，**執行完後務必檢查輸出的 `discarded_pages`／`valid_pages` 的 `section` 欄位是否合理**，格式不同就要照現有模式（`make_numeric_dot_detector`／`make_agenda_detector`／`inline_heading`）加一組新的偵測邏輯。
+
+### 4. 執行 chunker（轉成 ChromaDB 格式）
+
+```bash
+python -m src.parser.chunker "data/processed/parsed/.../新檔案.json"
+```
+
+輸出到 `data/processed/chunks/.../新檔案.json`，合併 manifest metadata、附上 `content_hash`，可直接餵給 ChromaDB。
+
+### 5.（尚未實作）寫入 ChromaDB
+
+`src/database/chroma_client.py` 與 `scripts/ingest_data.py` 目前都還是空的 placeholder。完成後預期會是：
+
+```bash
+python scripts/ingest_data.py "data/processed/chunks/.../新檔案.json"
+```
+
+讀取 chunk 檔案的 `id`／`document`／`metadata`，呼叫 `collection.add(...)` 寫入對應的 collection（`annual_report`／`quarterly_earningcall`／`glossary`），並回填 `manifest.json` 的 `ingestion_status`／`chunk_count`／`ingested_at`。
+
 ## 欄位總表
 
 | 欄位 | 型別 | 適用範圍 | 說明 |
