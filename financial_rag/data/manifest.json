@@ -397,9 +397,9 @@
       "event_date": "2025-05-07",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 30,
+      "ingested_at": "2026-07-27T09:01:29.360777+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q2_20250806",
@@ -422,9 +422,9 @@
       "event_date": "2025-08-06",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 23,
+      "ingested_at": "2026-07-27T09:01:32.325044+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q3_20251105",
@@ -447,9 +447,9 @@
       "event_date": "2025-11-05",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 32,
+      "ingested_at": "2026-07-27T09:01:35.366295+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q4_20260210",
@@ -472,9 +472,9 @@
       "event_date": "2026-02-10",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 17,
+      "ingested_at": "2026-07-27T09:01:38.018172+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2026Q1_20260505",
@@ -497,9 +497,9 @@
       "event_date": "2026-05-05",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 21,
+      "ingested_at": "2026-07-27T09:01:40.833291+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q1_20250410",
@@ -522,9 +522,9 @@
       "event_date": "2025-04-10",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 9,
+      "ingested_at": "2026-07-27T09:01:43.473050+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q2_20250710",
@@ -547,9 +547,9 @@
       "event_date": "2025-07-10",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 9,
+      "ingested_at": "2026-07-27T09:01:46.070426+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q3_20251013",
@@ -572,9 +572,9 @@
       "event_date": "2025-10-13",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 9,
+      "ingested_at": "2026-07-27T09:01:48.706494+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q4_20260119",
@@ -597,9 +597,9 @@
       "event_date": "2026-01-19",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 12,
+      "ingested_at": "2026-07-27T09:01:51.342830+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2026Q1_20260413",
@@ -622,9 +622,9 @@
       "event_date": "2026-04-13",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 13,
+      "ingested_at": "2026-07-27T09:01:54.061074+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2026Q2_20260710",
@@ -647,9 +647,9 @@
       "event_date": "2026-07-10",
       "source_url": "https://finmoconf.diveinvest.net",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 11,
+      "ingested_at": "2026-07-27T09:01:57.010039+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q1_20241218",
@@ -672,9 +672,9 @@
       "event_date": "2024-12-18",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 29,
+      "ingested_at": "2026-07-27T09:02:04.061444+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q2_20250320",
@@ -697,9 +697,9 @@
       "event_date": "2025-03-20",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 32,
+      "ingested_at": "2026-07-27T09:02:07.064861+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q3_20250625",
@@ -722,9 +722,9 @@
       "event_date": "2025-06-25",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 33,
+      "ingested_at": "2026-07-27T09:02:10.044364+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q4_20250923",
@@ -747,9 +747,9 @@
       "event_date": "2025-09-23",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 44,
+      "ingested_at": "2026-07-27T09:02:13.270600+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2026Q1_20251217",
@@ -772,9 +772,9 @@
       "event_date": "2025-12-17",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 37,
+      "ingested_at": "2026-07-27T09:02:16.343279+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2026Q2_20260318",
@@ -797,9 +797,9 @@
       "event_date": "2026-03-18",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 38,
+      "ingested_at": "2026-07-27T09:02:19.486460+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2026Q3_20260624",
@@ -822,9 +822,9 @@
       "event_date": "2026-06-24",
       "source_url": "https://investors.micron.com/events-and-presentations",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 37,
+      "ingested_at": "2026-07-27T09:02:22.519324+00:00"
     },
     {
       "id": "US_MU_prepared-remarks_FY2025Q1_20241218",
