@@ -125,21 +125,18 @@ data/raw/
 │       └── TW_2344/
 └── glossary/
 
-data/processed/    # 結構鏡射 data/raw/，存放切塊後的 JSON/Markdown
-├── annual_report/
-│   ├── US_10K/
-│   │   └── US_MU/
-│   └── TW_AIA/
-│       ├── TW_2408/
-│       └── TW_2344/
-├── quarterly_earningcall/
-│   ├── US_earning_call/
-│   │   └── US_MU/
-│   └── TW_investor_conference/
-│       ├── TW_2408/
-│       └── TW_2344/
-└── glossary/
+data/processed/    # 依 pipeline 階段分兩層，各自鏡射 data/raw/ 結構
+├── parsed/        # page_filter.py 輸出：過濾過場頁/免責聲明頁後的乾淨文字 + 章節 metadata
+│   ├── annual_report/...
+│   ├── quarterly_earningcall/...
+│   └── glossary/...
+└── chunks/        # chunker.py 輸出：合併 manifest metadata 後、可直接餵給 ChromaDB 的 chunk
+    ├── annual_report/...
+    ├── quarterly_earningcall/...
+    └── glossary/...
 ```
+
+`parsed/` 與 `chunks/` 是兩個獨立的 pipeline 階段產物，各自資料夾結構完全鏡射 `data/raw/`，不與原始檔案混放（詳見 [docs/manifest_schema.md](docs/manifest_schema.md) 的「Pipeline 階段與資料夾」章節）。
 
 `glossary/` 為單一參考文件，不需依公司分層。`data/processed/` 各子資料夾結構與 `data/raw/` 一致，方便 `chunker.py` 輸出對應到同一個檢索模組（collection）。
 
