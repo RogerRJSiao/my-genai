@@ -7,13 +7,51 @@ conda activate financial_rag
 python scripts/generate_manifest.py
 ```
 
+## Pipeline 階段與資料夾
+
+`data/processed/` 依處理階段分成兩個獨立子資料夾，結構鏡射 `data/raw/`：
+
+| 階段 | 資料夾 | 產生腳本 | 內容 |
+| --- | --- | --- | --- |
+| 中繼（parsed） | `data/processed/parsed/` | `src/parser/page_filter.py` | 過濾過場頁/免責聲明頁後的乾淨文字，附章節 metadata |
+| 最終（chunks） | `data/processed/chunks/` | `src/parser/chunker.py` | 合併 manifest metadata 後的 chunk，格式可直接餵給 ChromaDB |
+
+不同階段的產物放在不同資料夾，而非同一層用檔名後綴區分，方便日後用 glob（如 `data/processed/chunks/**/*.json`）一次批次處理某個階段的全部產物。
+
+```mermaid
+flowchart LR
+    raw[("data/raw/**/*\n(PDF / HTML)")]
+    gm["scripts/generate_manifest.py"]
+    manifest[("data/manifest.json")]
+    pf["src/parser/page_filter.py\n(pdfplumber 過濾過場頁/免責聲明頁\n章節標題 → metadata)"]
+    parsed[("data/processed/parsed/**/*.json")]
+    ck["src/parser/chunker.py\n(合併 manifest 欄位\n轉成 chunk 格式)"]
+    chunks[("data/processed/chunks/**/*.json")]
+    ingest["ingest_data.py\n(尚未實作)"]
+    chroma[("ChromaDB\ncollection: annual_report /\nquarterly_earningcall / glossary")]
+    vision["Vision model / Marker\n(尚未串接，未來讀圖表)"]
+
+    raw --> gm --> manifest
+    raw --> pf
+    manifest --> pf --> parsed
+    parsed --> ck
+    manifest --> ck --> chunks
+    chunks --> ingest --> chroma
+    parsed -. 未來 .-> vision
+    vision -. 填入 charts 欄位 .-> parsed
+
+    style ingest stroke-dasharray: 5 5
+    style vision stroke-dasharray: 5 5
+```
+
 ## 欄位總表
 
 | 欄位 | 型別 | 適用範圍 | 說明 |
 | --- | --- | --- | --- |
 | `id` | string | 全部 | 檔名（去除副檔名），作為唯一鍵，不隨路徑搬動而改變 |
 | `raw_path` | string | 全部 | 對應 `data/raw/` 的相對路徑 |
-| `processed_path` | string | 全部 | 對應 `data/processed/` 的相對路徑（切塊後應寫入的位置） |
+| `parsed_path` | string | 全部 | `page_filter.py` 應寫入的中繼產物路徑，對應 `data/processed/parsed/` |
+| `chunks_path` | string | 全部 | `chunker.py` 應寫入的最終 chunk 路徑，對應 `data/processed/chunks/`，可直接餵給 ChromaDB |
 | `collection` | string | 全部 | 對應的向量資料庫 collection：`annual_report`／`quarterly_earningcall`／`glossary` |
 | `market` | string \| null | 除 glossary 外 | 發行股票市場，`US`／`TW` |
 | `ticker` | string \| null | 除 glossary 外 | 股票代碼 |
@@ -62,7 +100,8 @@ print('重複財季標籤:', dupes or '無')
 {
   "id": "US_MU_earning-deck_FY2026Q3_20260624",
   "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.pdf",
-  "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.json",
+  "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.json",
+  "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.json",
   "collection": "quarterly_earningcall",
   "market": "US",
   "ticker": "MU",

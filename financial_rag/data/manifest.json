@@ -4,7 +4,8 @@
     {
       "id": "TW_2344_AIA_FY2021_20211231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2021_20211231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2021_20211231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2021_20211231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2021_20211231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2344",
@@ -28,7 +29,8 @@
     {
       "id": "TW_2344_AIA_FY2022_20221231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2022_20221231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2022_20221231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2022_20221231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2022_20221231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2344",
@@ -52,7 +54,8 @@
     {
       "id": "TW_2344_AIA_FY2023_20231231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2023_20231231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2023_20231231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2023_20231231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2023_20231231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2344",
@@ -76,7 +79,8 @@
     {
       "id": "TW_2344_AIA_FY2024_20241231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2024_20241231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2024_20241231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2024_20241231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2024_20241231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2344",
@@ -100,7 +104,8 @@
     {
       "id": "TW_2344_AIA_FY2025_20251231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2025_20251231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2025_20251231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2025_20251231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2344/TW_2344_AIA_FY2025_20251231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2344",
@@ -124,7 +129,8 @@
     {
       "id": "TW_2408_AIA_FY2021_20211231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2021_20211231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2021_20211231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2021_20211231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2021_20211231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2408",
@@ -148,7 +154,8 @@
     {
       "id": "TW_2408_AIA_FY2022_20221231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2022_20221231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2022_20221231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2022_20221231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2022_20221231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2408",
@@ -172,7 +179,8 @@
     {
       "id": "TW_2408_AIA_FY2023_20231231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2023_20231231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2023_20231231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2023_20231231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2023_20231231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2408",
@@ -196,7 +204,8 @@
     {
       "id": "TW_2408_AIA_FY2024_20241231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2024_20241231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2024_20241231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2024_20241231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2024_20241231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2408",
@@ -220,7 +229,8 @@
     {
       "id": "TW_2408_AIA_FY2025_20251231",
       "raw_path": "data/raw/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2025_20251231.pdf",
-      "processed_path": "data/processed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2025_20251231.json",
+      "parsed_path": "data/processed/parsed/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2025_20251231.json",
+      "chunks_path": "data/processed/chunks/annual_report/TW_AIA/TW_2408/TW_2408_AIA_FY2025_20251231.json",
       "collection": "annual_report",
       "market": "TW",
       "ticker": "2408",
@@ -244,7 +254,8 @@
     {
       "id": "US_MU_10K_FY2021_20210902",
       "raw_path": "data/raw/annual_report/US_10K/US_MU/US_MU_10K_FY2021_20210902.html",
-      "processed_path": "data/processed/annual_report/US_10K/US_MU/US_MU_10K_FY2021_20210902.json",
+      "parsed_path": "data/processed/parsed/annual_report/US_10K/US_MU/US_MU_10K_FY2021_20210902.json",
+      "chunks_path": "data/processed/chunks/annual_report/US_10K/US_MU/US_MU_10K_FY2021_20210902.json",
       "collection": "annual_report",
       "market": "US",
       "ticker": "MU",
@@ -268,7 +279,8 @@
     {
       "id": "US_MU_10K_FY2022_20220901",
       "raw_path": "data/raw/annual_report/US_10K/US_MU/US_MU_10K_FY2022_20220901.html",
-      "processed_path": "data/processed/annual_report/US_10K/US_MU/US_MU_10K_FY2022_20220901.json",
+      "parsed_path": "data/processed/parsed/annual_report/US_10K/US_MU/US_MU_10K_FY2022_20220901.json",
+      "chunks_path": "data/processed/chunks/annual_report/US_10K/US_MU/US_MU_10K_FY2022_20220901.json",
       "collection": "annual_report",
       "market": "US",
       "ticker": "MU",
@@ -292,7 +304,8 @@
     {
       "id": "US_MU_10K_FY2023_20230831",
       "raw_path": "data/raw/annual_report/US_10K/US_MU/US_MU_10K_FY2023_20230831.html",
-      "processed_path": "data/processed/annual_report/US_10K/US_MU/US_MU_10K_FY2023_20230831.json",
+      "parsed_path": "data/processed/parsed/annual_report/US_10K/US_MU/US_MU_10K_FY2023_20230831.json",
+      "chunks_path": "data/processed/chunks/annual_report/US_10K/US_MU/US_MU_10K_FY2023_20230831.json",
       "collection": "annual_report",
       "market": "US",
       "ticker": "MU",
@@ -316,7 +329,8 @@
     {
       "id": "US_MU_10K_FY2024_20240829",
       "raw_path": "data/raw/annual_report/US_10K/US_MU/US_MU_10K_FY2024_20240829.html",
-      "processed_path": "data/processed/annual_report/US_10K/US_MU/US_MU_10K_FY2024_20240829.json",
+      "parsed_path": "data/processed/parsed/annual_report/US_10K/US_MU/US_MU_10K_FY2024_20240829.json",
+      "chunks_path": "data/processed/chunks/annual_report/US_10K/US_MU/US_MU_10K_FY2024_20240829.json",
       "collection": "annual_report",
       "market": "US",
       "ticker": "MU",
@@ -340,7 +354,8 @@
     {
       "id": "US_MU_10K_FY2025_20250828",
       "raw_path": "data/raw/annual_report/US_10K/US_MU/US_MU_10K_FY2025_20250828.html",
-      "processed_path": "data/processed/annual_report/US_10K/US_MU/US_MU_10K_FY2025_20250828.json",
+      "parsed_path": "data/processed/parsed/annual_report/US_10K/US_MU/US_MU_10K_FY2025_20250828.json",
+      "chunks_path": "data/processed/chunks/annual_report/US_10K/US_MU/US_MU_10K_FY2025_20250828.json",
       "collection": "annual_report",
       "market": "US",
       "ticker": "MU",
@@ -364,7 +379,8 @@
     {
       "id": "TW_2344_investor-conference_FY2025Q1_20250507",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q1_20250507.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q1_20250507.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q1_20250507.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q1_20250507.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2344",
@@ -388,7 +404,8 @@
     {
       "id": "TW_2344_investor-conference_FY2025Q2_20250806",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q2_20250806.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q2_20250806.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q2_20250806.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q2_20250806.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2344",
@@ -412,7 +429,8 @@
     {
       "id": "TW_2344_investor-conference_FY2025Q3_20251105",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q3_20251105.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q3_20251105.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q3_20251105.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q3_20251105.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2344",
@@ -436,7 +454,8 @@
     {
       "id": "TW_2344_investor-conference_FY2025Q4_20260210",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q4_20260210.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q4_20260210.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q4_20260210.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2025Q4_20260210.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2344",
@@ -460,7 +479,8 @@
     {
       "id": "TW_2344_investor-conference_FY2026Q1_20260505",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2026Q1_20260505.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2026Q1_20260505.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2026Q1_20260505.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2344/TW_2344_investor-conference_FY2026Q1_20260505.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2344",
@@ -484,7 +504,8 @@
     {
       "id": "TW_2408_investor-conference_FY2025Q1_20250410",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q1_20250410.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q1_20250410.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q1_20250410.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q1_20250410.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2408",
@@ -508,7 +529,8 @@
     {
       "id": "TW_2408_investor-conference_FY2025Q2_20250710",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q2_20250710.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q2_20250710.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q2_20250710.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q2_20250710.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2408",
@@ -532,7 +554,8 @@
     {
       "id": "TW_2408_investor-conference_FY2025Q3_20251013",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q3_20251013.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q3_20251013.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q3_20251013.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q3_20251013.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2408",
@@ -556,7 +579,8 @@
     {
       "id": "TW_2408_investor-conference_FY2025Q4_20260119",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q4_20260119.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q4_20260119.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q4_20260119.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2025Q4_20260119.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2408",
@@ -580,7 +604,8 @@
     {
       "id": "TW_2408_investor-conference_FY2026Q1_20260413",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q1_20260413.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q1_20260413.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q1_20260413.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q1_20260413.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2408",
@@ -604,7 +629,8 @@
     {
       "id": "TW_2408_investor-conference_FY2026Q2_20260710",
       "raw_path": "data/raw/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q2_20260710.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q2_20260710.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q2_20260710.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/TW_investor_conference/TW_2408/TW_2408_investor-conference_FY2026Q2_20260710.json",
       "collection": "quarterly_earningcall",
       "market": "TW",
       "ticker": "2408",
@@ -628,7 +654,8 @@
     {
       "id": "US_MU_earning-deck_FY2025Q1_20241218",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q1_20241218.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q1_20241218.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q1_20241218.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q1_20241218.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -652,7 +679,8 @@
     {
       "id": "US_MU_earning-deck_FY2025Q2_20250320",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q2_20250320.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q2_20250320.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q2_20250320.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q2_20250320.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -676,7 +704,8 @@
     {
       "id": "US_MU_earning-deck_FY2025Q3_20250625",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q3_20250625.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q3_20250625.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q3_20250625.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q3_20250625.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -700,7 +729,8 @@
     {
       "id": "US_MU_earning-deck_FY2025Q4_20250923",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q4_20250923.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q4_20250923.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q4_20250923.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2025Q4_20250923.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -724,7 +754,8 @@
     {
       "id": "US_MU_earning-deck_FY2026Q1_20251217",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q1_20251217.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q1_20251217.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q1_20251217.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q1_20251217.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -748,7 +779,8 @@
     {
       "id": "US_MU_earning-deck_FY2026Q2_20260318",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q2_20260318.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q2_20260318.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q2_20260318.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q2_20260318.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -772,7 +804,8 @@
     {
       "id": "US_MU_earning-deck_FY2026Q3_20260624",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_earning-deck_FY2026Q3_20260624.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -796,7 +829,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2025Q1_20241218",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q1_20241218.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q1_20241218.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q1_20241218.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q1_20241218.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -820,7 +854,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2025Q2_20250320",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q2_20250320.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q2_20250320.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q2_20250320.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q2_20250320.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -844,7 +879,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2025Q3_20250625",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q3_20250625.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q3_20250625.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q3_20250625.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q3_20250625.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -868,7 +904,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2025Q4_20250923",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q4_20250923.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q4_20250923.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q4_20250923.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2025Q4_20250923.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -892,7 +929,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2026Q1_20251217",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q1_20251217.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q1_20251217.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q1_20251217.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q1_20251217.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -916,7 +954,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2026Q2_20260318",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q2_20260318.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q2_20260318.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q2_20260318.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q2_20260318.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -940,7 +979,8 @@
     {
       "id": "US_MU_prepared-remarks_FY2026Q3_20260624",
       "raw_path": "data/raw/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q3_20260624.pdf",
-      "processed_path": "data/processed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q3_20260624.json",
+      "parsed_path": "data/processed/parsed/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q3_20260624.json",
+      "chunks_path": "data/processed/chunks/quarterly_earningcall/US_earning_call/US_MU/US_MU_prepared-remarks_FY2026Q3_20260624.json",
       "collection": "quarterly_earningcall",
       "market": "US",
       "ticker": "MU",
@@ -964,7 +1004,8 @@
     {
       "id": "tifrs_20251229",
       "raw_path": "data/raw/glossary/tifrs_20251229.pdf",
-      "processed_path": "data/processed/glossary/tifrs_20251229.json",
+      "parsed_path": "data/processed/parsed/glossary/tifrs_20251229.json",
+      "chunks_path": "data/processed/chunks/glossary/tifrs_20251229.json",
       "collection": "glossary",
       "market": null,
       "ticker": null,

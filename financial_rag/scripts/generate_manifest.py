@@ -53,7 +53,8 @@ def parse_glossary(path):
     return {
         "id": path.stem,
         "raw_path": (Path("data/raw") / rel).as_posix(),
-        "processed_path": (Path("data/processed") / processed_rel).as_posix(),
+        "parsed_path": (Path("data/processed/parsed") / processed_rel).as_posix(),
+        "chunks_path": (Path("data/processed/chunks") / processed_rel).as_posix(),
         "collection": "glossary",
         "market": None,
         "ticker": None,
@@ -120,7 +121,8 @@ def parse_company_doc(path, doc_category):
     return {
         "id": stem,
         "raw_path": (Path("data/raw") / rel).as_posix(),
-        "processed_path": (Path("data/processed") / processed_rel).as_posix(),
+        "parsed_path": (Path("data/processed/parsed") / processed_rel).as_posix(),
+        "chunks_path": (Path("data/processed/chunks") / processed_rel).as_posix(),
         "collection": doc_category,
         "market": info["market"],
         "ticker": info["ticker"],
