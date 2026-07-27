@@ -15,6 +15,7 @@ python scripts/generate_manifest.py
 | --- | --- | --- | --- |
 | 中繼（parsed） | `data/processed/parsed/` | `src/parser/page_filter.py` | 過濾過場頁/免責聲明頁後的乾淨文字，附章節 metadata |
 | 最終（chunks） | `data/processed/chunks/` | `src/parser/chunker.py` | 合併 manifest metadata 後的 chunk，格式可直接餵給 ChromaDB |
+| 向量化（chroma_db） | `data/chroma_db/` | `scripts/ingest_data.py` | 寫入 ChromaDB 的向量與 metadata，供檢索用 |
 
 不同階段的產物放在不同資料夾，而非同一層用檔名後綴區分，方便日後用 glob（如 `data/processed/chunks/**/*.json`）一次批次處理某個階段的全部產物。
 
@@ -27,8 +28,8 @@ flowchart LR
     parsed[("data/processed/parsed/**/*.json")]
     ck["src/parser/chunker.py\n(合併 manifest 欄位\n轉成 chunk 格式)"]
     chunks[("data/processed/chunks/**/*.json")]
-    ingest["ingest_data.py\n(尚未實作)"]
-    chroma[("ChromaDB\ncollection: annual_report /\nquarterly_earningcall / glossary")]
+    ingest["scripts/ingest_data.py\n(呼叫 src/database/chroma_client.py)"]
+    chroma[("ChromaDB (data/chroma_db/)\nembedding: Ollama bge-m3\ncollection: annual_report /\nquarterly_earningcall / glossary")]
     vision["Vision model / Marker\n(尚未串接，未來讀圖表)"]
 
     raw --> gm --> manifest
@@ -40,7 +41,6 @@ flowchart LR
     parsed -. 未來 .-> vision
     vision -. 填入 charts 欄位 .-> parsed
 
-    style ingest stroke-dasharray: 5 5
     style vision stroke-dasharray: 5 5
 ```
 
@@ -88,15 +88,18 @@ python -m src.parser.chunker "data/processed/parsed/.../新檔案.json"
 
 輸出到 `data/processed/chunks/.../新檔案.json`，合併 manifest metadata、附上 `content_hash`，可直接餵給 ChromaDB。
 
-### 5.（尚未實作）寫入 ChromaDB
-
-`src/database/chroma_client.py` 與 `scripts/ingest_data.py` 目前都還是空的 placeholder。完成後預期會是：
+### 5. 寫入 ChromaDB
 
 ```bash
-python scripts/ingest_data.py "data/processed/chunks/.../新檔案.json"
+python scripts/ingest_data.py                                    # 補齊全部尚未 ingest 的項目（依 manifest ingestion_status 判斷）
+python scripts/ingest_data.py "data/processed/chunks/.../新檔案.json"  # 只處理指定檔案
 ```
 
-讀取 chunk 檔案的 `id`／`document`／`metadata`，呼叫 `collection.add(...)` 寫入對應的 collection（`annual_report`／`quarterly_earningcall`／`glossary`），並回填 `manifest.json` 的 `ingestion_status`／`chunk_count`／`ingested_at`。
+讀取 chunk 檔案的 `id`／`document`／`metadata`，用 `collection.upsert(...)` 寫入對應的 collection（`annual_report`／`quarterly_earningcall`／`glossary`，向量存放於 `data/chroma_db/`），並回填 `manifest.json` 的 `ingestion_status`（`pending`→`ingested`）／`chunk_count`／`ingested_at`。用 `upsert` 而非 `add`，同一份文件重新處理後再次執行不會報錯或產生重複 chunk。
+
+不帶參數執行時，若 manifest 中某筆項目的 `chunks_path` 檔案還不存在（例如尚未跑完步驟 3、4），會印出提示並跳過，不會中斷整個批次。
+
+⚠️ **Embedding 模型**：`src/database/chroma_client.py` 固定使用 README §1 指定的 Ollama `bge-m3:latest`（透過 `chromadb.utils.embedding_functions.OllamaEmbeddingFunction`，需本機 Ollama 服務可連線），而非 Chroma 預設的英文 `all-MiniLM-L6-v2`，以確保英文財報段落與繁中提問能語意對齊。若日後更換 embedding 模型或版本，向量維度可能改變，需先清空 `data/chroma_db/`、重置相關項目的 `ingestion_status` 後全部重新 ingest，不能與舊向量混用同一個 collection。
 
 ## 欄位總表
 
