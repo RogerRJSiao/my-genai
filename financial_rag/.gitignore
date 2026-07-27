@@ -9,6 +9,9 @@ data/knowledge_graph/**
 !data/knowledge_graph/**/
 !data/knowledge_graph/**/.gitkeep
 
+# ChromaDB persisted vector store (regenerated via scripts/ingest_data.py)
+data/chroma_db/
+
 # Python
 __pycache__/
 *.pyc
