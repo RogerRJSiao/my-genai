@@ -102,6 +102,12 @@ def strip_footer_lines(text, footer_re=DEFAULT_FOOTER_RE):
             continue
 
         cleaned.append(line)
+
+    # 部分文件把頁碼獨立成一行、跟版權頁尾行分開（版權行已被上面規則移除），
+    # 殘留在最後一行的純數字頁碼一併去除。
+    if cleaned and cleaned[-1].strip().isdigit():
+        cleaned.pop()
+
     return cleaned
 
 
@@ -117,8 +123,9 @@ def strip_footer_lines(text, footer_re=DEFAULT_FOOTER_RE):
 
 _NUMERIC_DOT_RE = re.compile(r"^\d{2}\.$")  # 如 "01."、"02."（Nanya 章節頁）
 # 目錄／Agenda 頁常見的條列格式，如 "01. Q2'26 Revenue & Results" 或
-# "01 Financial Results"（數字＋可選句點＋空白＋標題）。
-_OUTLINE_ITEM_RE = re.compile(r"^\d{2}\.?\s+\S.*$")
+# "01 Financial Results"（數字＋可選句點＋空白＋標題）。編號位數不同季度可能
+# 不一致（如 "1." 或 "01."），故容許 1～2 位數字。
+_OUTLINE_ITEM_RE = re.compile(r"^\d{1,2}\.?\s+\S.*$")
 
 
 def _count_outline_items(lines):
@@ -139,6 +146,28 @@ def make_numeric_dot_detector():
 
 
 _AGENDA_ITEM_RE = re.compile(r"^\d{2}\s+(.+)$")  # 如 "01 Financial Results"
+_AND_WORD_RE = re.compile(r"\band\b")
+
+
+def _normalize_ampersand(s):
+    """章節分隔頁有時把 Agenda 頁的 "&" 拼成 "and"（如 "Excellence & Forward"
+    vs "Excellence and Forward"），統一轉成 "&" 再比對。"""
+    return _AND_WORD_RE.sub("&", s)
+
+
+def _match_known_title_prefix(candidate, known_titles):
+    """candidate 是否以某個已收集標題開頭（含字界檢查，避免誤判半個字）。
+
+    部分季度的章節分隔頁會在標題後面多加副標題（如 "Excellence & Forward
+    - Secure Flash Business Update"），故用前綴比對而非要求完全相同。
+    """
+    for title_key, title in known_titles.items():
+        if not candidate.startswith(title_key):
+            continue
+        remainder = candidate[len(title_key):]
+        if remainder == "" or not remainder[0].isalnum():
+            return title
+    return None
 
 
 def make_agenda_detector():
@@ -150,23 +179,29 @@ def make_agenda_detector():
         if not lines:
             return None
 
-        # 嘗試把這頁當作 Agenda／Contents 頁，收集章節標題，該頁本身視為目錄頁丟棄。
-        items = [
-            m.group(1).strip()
+        # 嘗試把這頁當作 Agenda／Contents 頁：真正的目錄頁編號必為連續遞增的
+        # "01, 02, 03..."，藉此排除圖表數據頁裡剛好也有「兩位數字開頭」的
+        # 內容行（如調查分數 "54 Strong sales service"）造成的誤判。
+        matches = [
+            (m.group(0)[:2], m.group(1).strip())
             for line in lines
             if (m := _AGENDA_ITEM_RE.match(line.strip()))
         ]
-        if len(items) >= 2:
-            for item in items:
-                known_titles[item.lower()] = item
+        numbers = [num for num, _ in matches]
+        expected = [f"{n:02d}" for n in range(1, len(numbers) + 1)]
+        if len(matches) >= 2 and numbers == expected:
+            for _, item in matches:
+                known_titles[_normalize_ampersand(item.lower())] = item
             return ("outline_page", None)
 
         # 章節分隔頁：去除純數字的頁碼行後，剩餘內容（可能跨行，如
-        # "Business Recap\n& Outlook"）合併比對已收集到的標題。
+        # "Business Recap\n& Outlook"）合併比對已收集到的標題（允許標題後方
+        # 多接副標題，並容忍 "&"/"and" 拼法不一致）。
         content_lines = [line for line in lines if not line.strip().isdigit()]
-        candidate = " ".join(content_lines).strip().lower()
-        if candidate in known_titles:
-            return ("section_title", known_titles[candidate])
+        candidate = _normalize_ampersand(" ".join(content_lines).strip().lower())
+        matched_title = _match_known_title_prefix(candidate, known_titles)
+        if matched_title is not None:
+            return ("section_title", matched_title)
         return None
 
     return detector
