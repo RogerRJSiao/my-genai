@@ -59,14 +59,18 @@ python tests/test_ollama.py
 ## 🚀 4. 未來部署與架構規劃 (Deployment Roadmap)
 
 ```
-[開發階段]  Anaconda (financial_rag) + Windows Ollama (GPU 直通)
-      │
+[開發階段]     Anaconda (financial_rag) + Windows Ollama (GPU 直通)
+      │        目前僅有腳本呼叫（scripts/test_rag_chain.py），無對外服務介面
       ▼
-[部署階段]  Docker Container + Nvidia Container Toolkit (實現開發即部署)
+[API 階段]     FastAPI 封裝 retriever/generator 為 HTTP 服務
+      │        先有可呼叫的服務，才有東西值得裝進容器
+      ▼
+[部署階段]     Docker Container + Nvidia Container Toolkit (實現開發即部署)
 ```
 
-- **開發階段（當前）**：使用 Anaconda 虛擬環境開發，依賴已整理成 [requirements.txt](requirements.txt)（只列專案程式碼直接 import 的套件並釘死版本，不用 `pip freeze` 整包匯出，避免把尚未真正使用的套件也一併凍結進去，見套件選型章節）。
-- **部署階段（未來）**：採用 Docker + Docker Compose 架構，將 Python 後端、向量資料庫（如 ChromaDB / Qdrant）與 Ollama 容器化，可快速部署至任何 Linux / 雲端伺服器。
+- **開發階段（當前）**：使用 Anaconda 虛擬環境開發，依賴已整理成 [requirements.txt](requirements.txt)（只列專案程式碼直接 import 的套件並釘死版本，不用 `pip freeze` 整包匯出，避免把尚未真正使用的套件也一併凍結進去，見套件選型章節）。目前 RAG 鏈路只能透過腳本呼叫，還沒有對外服務介面。
+- **API 階段（下一步）**：用 FastAPI 把 `src/rag/retriever.py`／`generator.py` 封裝成 HTTP 端點，這是比直接上 Docker 更優先的一步——Docker 只負責把「已存在的服務」打包成可攜的部署單位，本身不會憑空產生服務能力；容器化一個沒有對外介面的腳本沒有實質效益。
+- **部署階段（未來）**：等 FastAPI 服務就緒後，採用 Docker + Docker Compose 架構，將 Python 後端（FastAPI）、向量資料庫（如 ChromaDB / Qdrant）與 Ollama 容器化，可快速部署至任何 Linux / 雲端伺服器。
 
 <details>
 <summary>✅ RAG 專案部署階段必要流程 (Deployment Checklist)</summary>
@@ -206,5 +210,9 @@ python scripts/generate_manifest.py
 
 - [x] Step 1：Ollama 安裝、模型下載（llama-3-taiwan & bge-m3）與 D 槽路徑修正。
 - [x] Step 2：Anaconda 獨立環境建置與 `test_ollama.py` 測試腳本準備。
-- [ ] Step 3：（下一階段）讀取英文 PDF 財報、切塊（Chunking）並存入向量資料庫。
-- [ ] Step 4：（下一階段）檢索鏈路串接（RAG Chain），實現英文檢索與繁體中文回答。
+- [x] Step 3：讀取英文財報（PDF 法說會簡報／HTML 10-K）、切塊（Chunking）並存入向量資料庫（`page_filter.py`／`chunker.py`／`annual_report_parser_us10k.py`／`ingest_data.py`）。
+- [x] Step 4：檢索鏈路串接（RAG Chain），實現英文檢索與繁體中文回答（`src/rag/retriever.py`／`generator.py`，驗證腳本 [scripts/test_rag_chain.py](scripts/test_rag_chain.py)）。
+- [x] Step 5：財會中英術語比對（`glossary_matcher.py`／`glossary_lookup.py`），橋接中文提問與英文財報用語。
+- [ ] Step 6：（下一階段）FastAPI 封裝 RAG 鏈路為 HTTP 服務——目前只有腳本呼叫，這是接上 Docker 部署前的必要前提（見 §4 部署路線圖）。
+- [ ] Step 7：（下一階段）Docker Container 化部署，待 Step 6 的服務介面就緒後才有意義。
+- [ ] Step 8：（下一階段，優先度較低）Vision model 串接，讀取圖表內容（目前 `charts` 欄位僅記錄座標，見 `page_filter.py`）。
