@@ -213,6 +213,6 @@ python scripts/generate_manifest.py
 - [x] Step 3：讀取英文財報（PDF 法說會簡報／HTML 10-K）、切塊（Chunking）並存入向量資料庫（`page_filter.py`／`chunker.py`／`annual_report_parser_us10k.py`／`ingest_data.py`）。
 - [x] Step 4：檢索鏈路串接（RAG Chain），實現英文檢索與繁體中文回答（`src/rag/retriever.py`／`generator.py`，驗證腳本 [scripts/test_rag_chain.py](scripts/test_rag_chain.py)）。
 - [x] Step 5：財會中英術語比對（`glossary_matcher.py`／`glossary_lookup.py`），橋接中文提問與英文財報用語。
-- [ ] Step 6：（下一階段）FastAPI 封裝 RAG 鏈路為 HTTP 服務——目前只有腳本呼叫，這是接上 Docker 部署前的必要前提（見 §4 部署路線圖）。
+- [x] Step 6：FastAPI 封裝 RAG 鏈路為 HTTP 服務，含瀏覽器端查詢頁面與自動化 smoke test（`src/api/main.py`／`src/api/static/index.html`，驗證腳本 [scripts/test_api.py](scripts/test_api.py)）。
 - [ ] Step 7：（下一階段）Docker Container 化部署，待 Step 6 的服務介面就緒後才有意義。
 - [ ] Step 8：（下一階段，優先度較低）Vision model 串接，讀取圖表內容（目前 `charts` 欄位僅記錄座標，見 `page_filter.py`）。
