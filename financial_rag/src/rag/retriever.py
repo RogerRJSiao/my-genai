@@ -66,13 +66,26 @@ def retrieve(collection, question, tickers, top_k=TOP_K):
     return hits
 
 
+def _format_file_reference(meta):
+    """組出來源檔案的引用片段：有 page 就標頁碼（財報 PDF，一頁一 chunk），
+    沒有 page 但有 statement 就標報表名稱（10-K HTML，一報表一 chunk）；
+    副檔名一律讀 metadata 的 file_format，不能寫死 .pdf（詞彙表/10-K 來源
+    可能是 .md/.html）。"""
+    filename = f"{meta.get('source_id')}.{meta.get('file_format') or 'pdf'}"
+    if meta.get("page"):
+        return f"{filename} 第{meta['page']}頁"
+    if meta.get("statement_label_en"):
+        return f"{filename} / {meta['statement_label_en']}"
+    return filename
+
+
 def build_context(hits):
     blocks = []
     for id_, doc, meta, dist in hits:
         header = (
             f"[來源: {meta.get('company_name_zh') or meta.get('ticker')}"
-            f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section')}"
-            f" / 檔案: {meta.get('source_id')}.pdf 第{meta.get('page')}頁]"
+            f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section') or ''}"
+            f" / 檔案: {_format_file_reference(meta)}]"
         )
         blocks.append(f"{header}\n{doc}")
     return "\n\n".join(blocks)
@@ -95,7 +108,7 @@ def format_sources(hits):
         lines.append(
             f"- {meta.get('company_name_zh') or meta.get('ticker')}"
             f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} /"
-            f" {meta.get('section')} / {meta.get('source_id')}.pdf 第{meta.get('page')}頁"
+            f" {meta.get('section') or ''} / {_format_file_reference(meta)}"
         )
     if not lines:
         return ""

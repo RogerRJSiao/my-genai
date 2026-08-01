@@ -272,9 +272,9 @@
       "event_date": null,
       "source_url": "https://investors.micron.com/sec-filings",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 4,
+      "ingested_at": "2026-08-01T10:07:06.269482+00:00"
     },
     {
       "id": "US_MU_10K_FY2022_20220901",
@@ -297,9 +297,9 @@
       "event_date": null,
       "source_url": "https://investors.micron.com/sec-filings",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 4,
+      "ingested_at": "2026-08-01T10:07:10.252029+00:00"
     },
     {
       "id": "US_MU_10K_FY2023_20230831",
@@ -322,9 +322,9 @@
       "event_date": null,
       "source_url": "https://investors.micron.com/sec-filings",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 4,
+      "ingested_at": "2026-08-01T10:07:14.186358+00:00"
     },
     {
       "id": "US_MU_10K_FY2024_20240829",
@@ -347,9 +347,9 @@
       "event_date": null,
       "source_url": "https://investors.micron.com/sec-filings",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 4,
+      "ingested_at": "2026-08-01T10:07:18.198583+00:00"
     },
     {
       "id": "US_MU_10K_FY2025_20250828",
@@ -372,9 +372,9 @@
       "event_date": null,
       "source_url": "https://investors.micron.com/sec-filings",
       "retrieved_date": null,
-      "ingestion_status": "pending",
-      "chunk_count": null,
-      "ingested_at": null
+      "ingestion_status": "ingested",
+      "chunk_count": 4,
+      "ingested_at": "2026-08-01T10:07:22.186358+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q1_20250507",

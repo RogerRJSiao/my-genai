@@ -32,6 +32,7 @@ DOC_LEVEL_FIELDS = [
     "doc_category",
     "doc_type",
     "collection",
+    "file_format",
     "accounting_standard",
     "fiscal_year",
     "fiscal_period",
