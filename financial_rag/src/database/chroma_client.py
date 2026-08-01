@@ -37,15 +37,23 @@ def get_collection(client, name):
     return client.get_or_create_collection(name=name, embedding_function=get_embedding_function())
 
 
+_UPSERT_BATCH_SIZE = 100
+
+
 def upsert_chunks(client, collection_name, chunks):
     """chunks 為 chunker.py 輸出的 list，每筆含 id/document/metadata。
 
     用 upsert 而非 add，同一份文件重新處理後再次寫入時會覆蓋舊 chunk 而非報錯或重複。
+    分批寫入（每批 _UPSERT_BATCH_SIZE 筆）：曾經一次把 1949 筆詞條全部丟給 Ollama
+    的 /embed 端點，導致其背後的模型 runner 掛掉、後續請求全部連線被拒，分批後
+    每次請求量小很多，不會再觸發這個問題。
     """
     collection = get_collection(client, collection_name)
-    collection.upsert(
-        ids=[c["id"] for c in chunks],
-        documents=[c["document"] for c in chunks],
-        metadatas=[c["metadata"] for c in chunks],
-    )
+    for i in range(0, len(chunks), _UPSERT_BATCH_SIZE):
+        batch = chunks[i : i + _UPSERT_BATCH_SIZE]
+        collection.upsert(
+            ids=[c["id"] for c in batch],
+            documents=[c["document"] for c in batch],
+            metadatas=[c["metadata"] for c in batch],
+        )
     return len(chunks)
