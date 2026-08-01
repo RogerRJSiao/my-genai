@@ -8,6 +8,7 @@
     conda activate financial_rag
     python scripts/test_rag_chain.py
 """
+import re
 import sys
 from pathlib import Path
 
@@ -26,7 +27,9 @@ SYSTEM_PROMPT = (
     "不可使用段落以外的知識。若段落中找不到答案，請明確說明查無資料。"
     "務必使用繁體中文回答，並在回答最後標註引用來源（公司代碼、財季、章節）。"
     "如果要用季度比較時，請務必拿台灣股市的原本季度名(FY2020Q1)與美國股市的下一季度名(FY2020Q2)相互比較。"
-    "美國股市用美元，台灣股市用台幣，通通都要先轉換成台幣才能比較。"
+    "美國股市用美元，台灣股市用台幣，需要換算成同一幣別才能比較；"
+    "但若段落中沒有提供匯率，絕對不可自行編造或引用記憶中的匯率數字換算，"
+    "應直接列出雙方原始幣別金額，並明確說明「查無匯率資料，無法換算成同一幣別比較」。"
 )
 
 # 人工準備的測試題，expected 只是提示，需自行對照原始 PDF 核對正確性
@@ -107,9 +110,21 @@ def _latest_event_date(collection, ticker):
     return max(dates) if dates else None
 
 
+# 問題若明確點名財季（如「FY2026Q2」），檢索時應直接鎖定該財季而非交給語意相似度
+# 排序：多公司比較/跨市場財季對齊的問題常常混雜 2-3 個財季字樣，光靠語意排序會抓到
+# 語意相近但財季不對的段落（例如問 FY2026Q2 卻抓到 FY2025Q3、FY2026Q1 的段落），
+# 讓 LLM 因為 context 財季對不上而保守拒答。
+_FISCAL_PERIOD_PATTERN = re.compile(r"FY\d{4}Q[1-4]")
+
+
+def _mentioned_fiscal_periods(question):
+    return _FISCAL_PERIOD_PATTERN.findall(question)
+
+
 def retrieve(collection, question, tickers, top_k=TOP_K):
     """每家公司各自查詢 top_k 筆再合併，避免多公司比較時被單一公司的段落洗掉。"""
     recency = _is_recency_question(question)
+    periods = _mentioned_fiscal_periods(question)
     hits = []
     for ticker in tickers:
         where = {"ticker": ticker}
@@ -117,6 +132,13 @@ def retrieve(collection, question, tickers, top_k=TOP_K):
             latest = _latest_event_date(collection, ticker)
             if latest:
                 where = {"$and": [{"ticker": ticker}, {"event_date": latest}]}
+        elif periods:
+            period_filter = (
+                {"fiscal_period": periods[0]}
+                if len(periods) == 1
+                else {"fiscal_period": {"$in": periods}}
+            )
+            where = {"$and": [{"ticker": ticker}, period_filter]}
         res = collection.query(
             query_texts=[question],
             n_results=top_k,
@@ -130,7 +152,10 @@ def retrieve(collection, question, tickers, top_k=TOP_K):
 def build_context(hits):
     blocks = []
     for id_, doc, meta, dist in hits:
-        header = f"[來源: {meta.get('ticker')} {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section')}]"
+        header = (
+            f"[來源: {meta.get('company_name_zh') or meta.get('ticker')}"
+            f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section')}]"
+        )
         blocks.append(f"{header}\n{doc}")
     return "\n\n".join(blocks)
 
