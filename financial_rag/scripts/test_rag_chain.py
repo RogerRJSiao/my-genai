@@ -27,13 +27,22 @@ from src.rag.retriever import build_context, format_sources, retrieve  # noqa: E
 # tickers 可放多家公司代碼：每家公司各自檢索 top_k，保證每家都有結果進 context，
 # 不會因為某家公司段落語意相似度較高，把另一家的段落全部擠掉。留空則由
 # query_resolver 從問題文字自動解析。
-# collection 預設 "quarterly_earningcall"，個別題目可指定其他 collection（目前
-# annual_report/glossary 都還沒 ingest 任何資料，可用來測試「查無資料」的情境）。
+# collections 預設 ["quarterly_earningcall"]，個別題目可用 "collection"（單一）
+# 或 "collections"（list）指定其他 collection；填多個 collection 時每個都各自
+# 檢索、結果合併進 context，供需要跨 collection 才能回答的問題使用（例如同時
+# 對照法說會展望與年報揭露）。glossary collection 已 ingest IFRS/US GAAP
+# 與半導體詞彙表，供 glossary_matcher 比對用，golden set 目前沒有直接對它
+# 出題。若要測試「查無資料」的情境，改用下面涵蓋範圍之外的公司/財季/報表
+# 組合（如 annual_report 目前只有美光，南亞科/華邦電就還沒 ingest）。
 #
 # 目前資料庫實際涵蓋範圍（截至 2026-08-01，供設計邊界測試題參考）：
-#   MU   FY2025Q1 (2024-12-18) ~ FY2026Q3 (2026-06-24)
-#   2408 FY2025Q1 (2025-04-10) ~ FY2026Q2 (2026-07-10)
-#   2344 FY2025Q1 (2025-05-07) ~ FY2026Q1 (2026-05-05)
+#   quarterly_earningcall：
+#     MU   FY2025Q1 (2024-12-18) ~ FY2026Q3 (2026-06-24)
+#     2408 FY2025Q1 (2025-04-10) ~ FY2026Q2 (2026-07-10)
+#     2344 FY2025Q1 (2025-05-07) ~ FY2026Q1 (2026-05-05)
+#   annual_report：
+#     MU   FY2021 ~ FY2025（10-K，四大報表：資產負債表/損益表/現金流量表/權益變動表）
+#     2408／2344 尚未 ingest，問到這兩家的 annual_report 應誠實回答查無資料
 GOLDEN_SET = [
     {
         "category": "一般問題（單一公司細節）",
@@ -60,23 +69,28 @@ GOLDEN_SET = [
         "expected": "應對應最新一期 FY2026Q1（2026-05-05）的內容，而非語意相似度最高、但較舊的季度",
     },
     {
-        "category": "超出資料時間範圍（不存在的未來財季）",
-        "question": "美光FY2027Q1的營收預測是多少？",
+        "category": "一般問題（年報股東權益表）",
+        "question": "美光FY2025年報的股東權益表中，資本公積與保留盈餘分別是多少？",
         "tickers": ["MU"],
-        "expected": "資料庫目前只到 FY2026Q3，應誠實回答查無資料，不可用其他財季數字硬湊或幻覺",
+        "collections": ["annual_report"],
+        "expected": "資本公積(Additional Capital) $13,339M、保留盈餘(Retained Earnings) $48,583M"
+        "（見 US_MU_10K_FY2025 Consolidated Statements of Changes in Equity，Balance as of August 28, 2025）",
     },
     {
-        "category": "資料庫未涵蓋的公司",
-        "question": "SK海力士（SK Hynix）最新一季的財報表現如何？",
-        "tickers": ["000660"],
-        "expected": "資料庫完全沒有這家公司的資料，應回答查無資料，不可誤用其他三家公司的數字回答",
+        "category": "資料庫未涵蓋的公司（annual_report，僅美光已 ingest）",
+        "question": "南亞科與華邦電在最新年度財報的股東權益表中，資本公積與保留盈餘分別是多少？",
+        "tickers": ["2408", "2344"],
+        "collections": ["annual_report"],
+        "expected": "annual_report collection 目前只有美光（MU）5個財年的資料，"
+        "南亞科/華邦電尚未 ingest，應誠實回答查無資料，不可誤用美光的數字回答",
     },
     {
-        "category": "超出文件類型範圍（annual_report 尚未 ingest）",
-        "question": "華邦電年度財報中會計師查核意見為何？",
-        "tickers": ["2344"],
-        "collection": "annual_report",
-        "expected": "annual_report collection 目前是空的（尚未跑過 page_filter/chunker/ingest），應回答查無資料",
+        "category": "跨 collection 比較（法說會 vs 年報，目前僅美光兩邊都有資料）",
+        "question": "美光FY2026Q3法說會提到的展望，與其最新年報揭露的風險因子是否一致？",
+        "tickers": ["MU"],
+        "collections": ["quarterly_earningcall", "annual_report"],
+        "expected": "context 應同時包含 quarterly_earningcall 與 annual_report 兩邊的段落，"
+        "而非只查到其中一個 collection 就作答",
     },
 ]
 
@@ -88,11 +102,14 @@ def main():
 
     for i, case in enumerate(GOLDEN_SET, 1):
         #--檢索模組--#
-        # 依題目指定的 collection 取用，並快取已取得的 collection 物件避免重複呼叫。
-        collection_name = case.get("collection", "quarterly_earningcall")
-        if collection_name not in collections:
-            collections[collection_name] = get_collection(client, collection_name)
-        collection = collections[collection_name]
+        # 依題目指定的 collection（可單一可多個）取用，並快取已取得的 collection
+        # 物件避免重複呼叫。"collection"（單數字串）與 "collections"（list）
+        # 都支援，沒填則預設只查 quarterly_earningcall。
+        collection_names = case.get("collections") or [case.get("collection", "quarterly_earningcall")]
+        for name in collection_names:
+            if name not in collections:
+                collections[name] = get_collection(client, name)
+        case_collections = [collections[name] for name in collection_names]
 
         #--1.公司名稱解析（src/rag/query_resolver.py）：
         # golden set 有填 tickers 就直接用，沒填則從問題文字自動解析公司名稱。
@@ -107,18 +124,41 @@ def main():
 
         #--2.語意檢索與組裝 context（src/rag/retriever.py）：
         # retrieve() 內部依序做「最近/最新」關鍵字偵測、財季字樣偵測、實際語意查詢。
-        hits = retrieve(collection, case["question"], tickers)
-        print(f"檢索結果（collection={collection_name}）：")
+        # collections 可傳 list，跨 collection 查詢時每筆 hit 各自標註來源 collection。
+        hits = retrieve(case_collections, case["question"], tickers)
+        print(f"檢索結果（collections={collection_names}）：")
         if not hits:
             print("  （無結果）")
-        for id_, doc, meta, dist in hits:
-            print(f"  - [{meta.get('ticker')}] {id_} | distance={dist:.4f} | section={meta.get('section')}")
+        for id_, doc, meta, dist, hit_collection_name in hits:
+            print(
+                f"  - [{hit_collection_name}/{meta.get('ticker')}] {id_}"
+                f" | distance={dist:.4f} | section={meta.get('section')}"
+            )
 
         context = build_context(hits)
 
+        #--3.專業術語比對（src/rag/glossary_matcher.py）：
+        # 從問題與「實際檢索到的財報原文」（不是 LLM 回答，避免 LLM 改寫用詞或
+        # 把查無資料的固定回覆句誤判成術語）擷取候選術語，再用已 ingest 的
+        # glossary collection 做語意檢索，找出對應的官方中英譯名。
+        # context 是空的代表沒有真正的術語來源可以擷取；比對不到可信結果的
+        # 候選詞也不用顯示——沒東西可看就不印這個區塊。
+        # 提前到生成之前做（原本只在生成後印出來供人工核對），是因為實測發現
+        # 財報表格欄位是英文、問題卻用中文財會慣用語時（如「資本公積」對應
+        # 表格的 "Additional Capital"），就算數字位置完全正確，LLM 也常常
+        # 做不出這一步中英對應而誤判「查無資料」；比對結果現在會一併餵給
+        # generate_answer 當提示，不只是印出來而已。
+        matches = []
+        if context.strip():
+            if "glossary" not in collections:
+                collections["glossary"] = get_collection(client, "glossary")
+            candidate_terms = extract_terms(f"{case['question']}\n{context}")
+            if candidate_terms:
+                matches = match_terms(candidate_terms, collections["glossary"])
+
         #--生成模組--#（src/rag/generator.py）
-        # 把檢索到的段落餵給 LLM，產生繁體中文回答。
-        answer = generate_answer(case["question"], context)
+        # 把檢索到的段落與術語比對提示餵給 LLM，產生繁體中文回答。
+        answer = generate_answer(case["question"], context, glossary_matches=matches)
 
         print("-" * 70)
         print("LLM 回答：")
@@ -129,19 +169,6 @@ def main():
             print()
             print(sources)
 
-        #--3.專業術語比對（src/rag/glossary_matcher.py）：
-        # 從問題與「實際檢索到的財報原文」（不是 LLM 回答，避免 LLM 改寫用詞或
-        # 把查無資料的固定回覆句誤判成術語）擷取候選術語，再用已 ingest 的
-        # glossary collection 做語意檢索，找出對應的官方中英譯名。
-        # context 是空的代表沒有真正的術語來源可以擷取；比對不到可信結果的
-        # 候選詞也不用顯示——沒東西可看就不印這個區塊。
-        matches = []
-        if context.strip():
-            if "glossary" not in collections:
-                collections["glossary"] = get_collection(client, "glossary")
-            candidate_terms = extract_terms(f"{case['question']}\n{context}")
-            if candidate_terms:
-                matches = match_terms(candidate_terms, collections["glossary"])
         if matches:
             print()
             # glossary collection 目前收錄 IFRS/US GAAP 財務會計詞彙（tifrs_glossary_latest）
