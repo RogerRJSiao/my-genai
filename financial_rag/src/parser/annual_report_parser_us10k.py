@@ -96,9 +96,16 @@ def _clean_row_cells(cells):
     期間欄位對不齊——實測發現這會讓 LLM 把「這一欄的金額」誤讀成「下一欄的
     科目」（例如把 Common Stock 的金額誤認成 Additional Capital）。把「$」
     併到緊接著的下一格、丟掉純空白格，才能讓資料格數確實對應期間數。
+
+    第 0 格（列標籤欄，如「Balance as of ...」）一律保留、不參與丟棄空格的
+    判斷：多層表頭的表頭列在這一欄本來就是空的（見 _table_html_to_rows），
+    若比照後面欄位一律丟棄空字串，會把表頭列的標籤欄整個吃掉，跟資料列的
+    標籤欄位對不上，錯位一格。
     """
-    cleaned = []
-    i = 0
+    if not cells:
+        return cells
+    cleaned = [cells[0]]
+    i = 1
     while i < len(cells):
         cell = cells[i]
         if cell == "$" and i + 1 < len(cells):
@@ -112,28 +119,108 @@ def _clean_row_cells(cells):
     return cleaned
 
 
+def _collapse_spanned_cells(cells):
+    """相鄰儲存格若來自同一個原始 <td>（colspan 展開或 rowspan 沿用而重複的
+    副本），只留一份；靠「是否為同一個原始 <td>」判斷而非文字是否相同，避免
+    誤把兩個剛好數值相同的不同欄位（如兩期剛好都是 "$0"）誤併成一欄。"""
+    collapsed = []
+    prev_key = object()
+    for text, key in cells:
+        if key is not None and key == prev_key:
+            continue
+        collapsed.append(text)
+        prev_key = key
+    return collapsed
+
+
 def _table_html_to_rows(table_html):
     """把表格 HTML 轉成 list of list 字串（供 table_rows_to_markdown 使用）。
 
     只取最外層 <table> 的列，忽略巢狀子表格自己的列（避免重複計入子表格內容）。
+
+    美光 10-K 的權益變動表表頭用 colspan/rowspan 做多層表頭（如「Common Stock」
+    橫跨兩個子欄「Number of Shares」/「Amount」，其餘欄位則用 rowspan=2
+    跨兩列表頭只寫一次）。原本逐格取 get_text() 不展開 colspan/rowspan，
+    會讓表頭列的儲存格數遠少於資料列（實測：表頭兩列分別只有 6、2 格，
+    資料列卻有 8 格），欄位對不齊到連 LLM 都判斷「查無資料」。這裡改成先
+    依 colspan/rowspan 展開成完整網格（跨列的儲存格複製到每一列該欄位置），
+    再用 _collapse_spanned_cells 把「展開出來的重複副本」收斂回一格，
+    表頭列展開＋收斂後就能跟資料列的欄數對上。
     """
     soup = BeautifulSoup(table_html, "html.parser")
     outer_table = soup.find("table")
     if outer_table is None:
         return []
 
-    rows = []
+    grid_rows = []
+    pending = {}  # col_index -> [text, group_key, 剩餘 rowspan 列數]
     for tr in outer_table.find_all("tr"):
         # 略過屬於巢狀子表格的 <tr>（其最近的 table 祖先不是 outer_table）。
         if tr.find_parent("table") is not outer_table:
             continue
-        cells = [cell.get_text(" ", strip=True) for cell in tr.find_all(["td", "th"])]
-        rows.append(_clean_row_cells(cells))
-    return rows
+
+        row = {}
+        col = 0
+        for cell in tr.find_all(["td", "th"]):
+            while col in pending:
+                text, group_key, remaining = pending[col]
+                row[col] = (text, group_key)
+                remaining -= 1
+                if remaining > 0:
+                    pending[col] = [text, group_key, remaining]
+                else:
+                    del pending[col]
+                col += 1
+            colspan = int(cell.get("colspan") or 1)
+            rowspan = int(cell.get("rowspan") or 1)
+            text = cell.get_text(" ", strip=True)
+            group_key = id(cell)
+            for _ in range(colspan):
+                row[col] = (text, group_key)
+                if rowspan > 1:
+                    pending[col] = [text, group_key, rowspan - 1]
+                col += 1
+        # tr 自己宣告的儲存格處理完後，欄位往右可能還有上面幾列 rowspan 沿用
+        # 下來、但這一列沒有自己宣告新內容的欄位，一併補上。
+        while col in pending:
+            text, group_key, remaining = pending[col]
+            row[col] = (text, group_key)
+            remaining -= 1
+            if remaining > 0:
+                pending[col] = [text, group_key, remaining]
+            else:
+                del pending[col]
+            col += 1
+
+        if row:
+            width = max(row) + 1
+            grid_rows.append([row.get(i, ("", None)) for i in range(width)])
+
+    ncols = max((len(r) for r in grid_rows), default=0)
+    grid_rows = [r + [("", None)] * (ncols - len(r)) for r in grid_rows]
+
+    return [_clean_row_cells(_collapse_spanned_cells(row)) for row in grid_rows]
+
+
+# 報表標題後面緊接著一句單位說明（如 "(In millions, except per share amounts)"），
+# 跟標題本身分屬不同 <span>（字級/字重不同），但表格本體完全不會重複這個資訊——
+# 儲存格只有裸數字（如 "$13,339"），沒有任何單位標示。原本只抓 <table> 本身，
+# 這句話整個被丟掉，LLM 看不到「這是百萬美元」，實測發現生成回答時會直接照抄
+# 裸數字、漏掉單位（如把 $13,339M 說成 13,339，讓人誤以為是 13,339 美元）。
+# 用括號比對抓出這句話，不管它在原始 HTML 裡實際用什麼標籤包裝。
+_UNITS_CAPTION_RE = re.compile(r"\(in\s+millions[^)]*\)", re.IGNORECASE)
+
+
+def _extract_units_caption(html_text, heading_offset, table_start):
+    between = html_text[heading_offset:table_start]
+    text = BeautifulSoup(between, "html.parser").get_text(" ", strip=True)
+    match = _UNITS_CAPTION_RE.search(text)
+    return match.group(0) if match else None
 
 
 def parse_us10k_statements(html_path):
-    """回傳 list of {"key", "label_en", "label_zh", "rows"}，找不到的報表不會出現在結果裡。"""
+    """回傳 list of {"key", "label_en", "label_zh", "units_caption", "rows"}，
+    找不到的報表不會出現在結果裡。units_caption 找不到則為 None。"""
     html_text = Path(html_path).read_text(encoding="utf-8", errors="ignore")
 
     statements = []
@@ -142,6 +229,8 @@ def parse_us10k_statements(html_path):
         if offset is None:
             continue
         table_html = _extract_balanced_table_html(html_text, offset)
+        table_start = html_text.index("<table", offset)
+        units_caption = _extract_units_caption(html_text, offset, table_start)
         rows = _table_html_to_rows(table_html)
         rows = [row for row in rows if any(cell for cell in row)]
         if not rows:
@@ -151,6 +240,7 @@ def parse_us10k_statements(html_path):
                 "key": spec["key"],
                 "label_en": spec["label_en"],
                 "label_zh": spec["label_zh"],
+                "units_caption": units_caption,
                 "rows": rows,
             }
         )
@@ -172,10 +262,27 @@ _EQUITY_STATEMENT_KEY = "equity_statement"
 
 
 def _trim_equity_statement_rows(rows):
-    """只保留表頭列（前兩列的欄位標籤）與最後一列（最新一期的期末餘額）。"""
+    """只保留完整表頭列（欄位標籤跟資料列欄數對得上）與最後一列（最新一期的期末餘額）。
+
+    表頭層數不固定：多數年度是兩層（如「Common Stock」再分「Number of
+    Shares」/「Amount」兩個子欄，rowspan 沿用的欄位標籤已由 _table_html_to_rows
+    展開填進第二層），但併入非控制權益（Noncontrolling Interests in
+    Subsidiaries）的年度（如 FY2021 10-K，多了「Micron Shareholders」這層
+    分組）會變成三層表頭——原本寫死取 rows[1] 在這種年度會抓到還沒展開完的
+    中間層，跟資料列欄數對不上（實測：9 欄表頭 vs 10 欄資料）。改用結構規律：
+    每一層表頭的第 0 欄（列標籤欄）都是空字串，只有資料列的第 0 欄是實際列名
+    （如「Balance at ...」），往下找到最後一個「第 0 欄是空字串」的列，就是
+    最深、欄數跟資料列對得上的完整表頭，不受表頭層數多寡影響。
+    """
     if len(rows) <= 3:
         return rows
-    return rows[:2] + [rows[-1]]
+    header_idx = 0
+    for i, row in enumerate(rows):
+        if row and row[0] == "":
+            header_idx = i
+        else:
+            break
+    return [rows[header_idx], rows[-1]]
 
 
 def build_us10k_chunks(doc_id, statements, manifest_entry):
@@ -195,7 +302,10 @@ def build_us10k_chunks(doc_id, statements, manifest_entry):
         rows = stmt["rows"]
         if stmt["key"] == _EQUITY_STATEMENT_KEY:
             rows = _trim_equity_statement_rows(rows)
-        document = table_rows_to_markdown(rows, caption=stmt["label_en"])
+        caption = stmt["label_en"]
+        if stmt.get("units_caption"):
+            caption = f"{caption} {stmt['units_caption']}"
+        document = table_rows_to_markdown(rows, caption=caption)
         if not document:
             continue
         chunks.append(
