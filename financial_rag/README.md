@@ -2,14 +2,12 @@
 
 本專案旨在建立一個以檢索增強生成（RAG, Retrieval-Augmented Generation）為核心的 AI 系統，能精準讀取並分析英文財務報告，並以流暢的繁體中文回答相關問題。
 
-<details>
-<summary>🖼️ 財報 RAG 問答系統 (以 GUI 網頁呈現)</summary>
-
-輸入問題、可選公司代碼／財年財季／檢索範圍：
-
 ![FastAPI 靜態網頁：問題輸入表單](images/FinancialRAG_靜態網頁_01.png)
 
-送出後顯示回答、引用來源與專業術語比對表：
+<details>
+<summary>🖼️ 財報 RAG 問答系統-回答 (以 GUI 網頁呈現)</summary>
+
+輸入問題、可選公司代碼／財年財季／檢索範圍之後，送出後顯示 LLM 回答、引用來源與專業術語比對表：
 
 ![FastAPI 靜態網頁：RAG 回答結果與術語比對](images/FinancialRAG_靜態網頁_02.png)
 
