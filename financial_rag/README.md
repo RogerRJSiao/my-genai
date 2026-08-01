@@ -20,8 +20,8 @@
 
 | 模型架構類型 | 模型名稱 (Ollama Tag) | 尺寸/量化版本 | 說明/用途 |
 | --- | --- | --- | --- |
-| LLM (文字生成) | [`cwchang/llama-3-taiwan-8b-instruct:q4_k_m`](https://ollama.com/jcai/llama-3-taiwan-8b-instruct) | ~4.9 GB (4-bit) | 具備台灣在地化語言能力的 LLM，負責將檢索到的財報內容彙總並用繁體中文回答。 |
-| Embedding (向量化) | [`bge-m3:latest`](https://ollama.com/library/bge-m3) | ~1.2 GB (567M) | 強大的跨語言語意模型（生成 1024 維度向量），負責將英文財報段落與中文提問進行語意對齊。 |
+| LLM<br>(文字生成) | [`cwchang/llama-3-taiwan-8b-instruct:q4_k_m`](https://ollama.com/jcai/llama-3-taiwan-8b-instruct) | ~4.9 GB (4-bit) | 具備台灣在地化語言能力的 LLM，負責將檢索到的財報內容彙總並用繁體中文回答。<br>⚠️ 實作限制：量化 8B 模型讀表格跨欄比對本身不穩定，已用 `temperature=0` 消除隨機亂答，但無法提升正確率上限；要求「加總/比較」多個數字時常拒答或給出不合理推論。 |
+| Embedding<br>(向量化) | [`bge-m3:latest`](https://ollama.com/library/bge-m3) | ~1.2 GB (567M) | 強大的跨語言語意模型（生成 1024 維度向量），負責將英文財報段落與中文提問進行語意對齊。<br>⚠️ 實作限制：語意檢索不保證命中最精確的官方譯名，glossary 比對結果只能當提示，不能完全取代模型判斷。 |
 
 > 💡 **VRAM 載入注意事項**：Ollama 預設會在閒置 5 分鐘後自動將模型從 VRAM 釋放（卸載至 0.0 GB），發送新請求時會自動重新載入，屬正常的省電與資源釋放機制。若希望模型永久常駐顯存，可在呼叫時帶入 `keep_alive="-1"`。
 
@@ -173,6 +173,10 @@ python tests/test_ollama.py
 | Uedu 優學院<br>半導體產業專有名詞中英對照 | Markdown（透過 Claude Code 先手動轉網頁資訊） | https://uedu.tw/semiconductor/glossary |
 
 > 性質類似字典檔，或俗稱的（中英）對照表；每份只保留最新版本。用途：橋接中文提問用語與英文財報欄名，提升回答準確率。
+
+### 最終目的 - 建立 ChromaDB 向量資料庫
+   - 向量資料庫：每個 collection 各自一個 UUID 資料夾，`chroma.sqlite3` 為 metadata/索引本體。
+      ![data/chroma_db/ 資料夾結構：collection UUID 子資料夾與 chroma.sqlite3](images/FinancialRAG_資料庫_00.png)
 
 ---
 
