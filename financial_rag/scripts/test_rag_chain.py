@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.database.chroma_client import get_client, get_collection  # noqa: E402
 from src.rag.generator import generate_answer  # noqa: E402
+from src.rag.glossary_matcher import extract_terms, match_terms  # noqa: E402
 from src.rag.query_resolver import resolve_tickers  # noqa: E402
 from src.rag.retriever import build_context, format_sources, retrieve  # noqa: E402
 
@@ -40,43 +41,43 @@ GOLDEN_SET = [
         "tickers": [],
         "expected": "DRAM $31,328M vs 上季 $18,768M，QoQ +67%（見 US_MU_earning-deck_FY2026Q3 Revenue by technology）",
     },
-    # {
-    #     "category": "一般問題（多公司比較）",
-    #     "question": "請比較美光FY2026Q2、南亞科FY2026Q1、華邦電FY2026Q1法說會提到的獲利與稅務？",
-    #     "tickers": ["MU", "2408", "2344"],
-    #     "expected": "需分別對照三家公司對應財季的財務段落",
-    # },
-    # {
-    #     "category": "財季對齊比較（跨市場季度偏移）",
-    #     "question": "能否拿美光的FY2026Q2比較南亞科FY2026Q1資料？",
-    #     "tickers": ["MU", "2408"],
-    #     "expected": "系統提示應能理解台股/美股財季命名偏移一季的對應關係",
-    # },
-    # {
-    #     "category": "時間模糊問題（已知弱點：語意檢索不理解「最近」）",
-    #     "question": "華邦電最近一季法說會提到哪些重點？",
-    #     "tickers": ["2344"],
-    #     "expected": "應對應最新一期 FY2026Q1（2026-05-05）的內容，而非語意相似度最高、但較舊的季度",
-    # },
-    # {
-    #     "category": "超出資料時間範圍（不存在的未來財季）",
-    #     "question": "美光FY2027Q1的營收預測是多少？",
-    #     "tickers": ["MU"],
-    #     "expected": "資料庫目前只到 FY2026Q3，應誠實回答查無資料，不可用其他財季數字硬湊或幻覺",
-    # },
+    {
+        "category": "一般問題（多公司比較）",
+        "question": "請比較美光FY2026Q2、南亞科FY2026Q1、華邦電FY2026Q1法說會提到的獲利與稅務？",
+        "tickers": ["MU", "2408", "2344"],
+        "expected": "需分別對照三家公司對應財季的財務段落",
+    },
+    {
+        "category": "財季對齊比較（跨市場季度偏移）",
+        "question": "能否拿美光的FY2026Q2比較南亞科FY2026Q1資料？",
+        "tickers": ["MU", "2408"],
+        "expected": "系統提示應能理解台股/美股財季命名偏移一季的對應關係",
+    },
+    {
+        "category": "時間模糊問題（已知弱點：語意檢索不理解「最近」）",
+        "question": "華邦電最近一季法說會提到哪些重點？",
+        "tickers": ["2344"],
+        "expected": "應對應最新一期 FY2026Q1（2026-05-05）的內容，而非語意相似度最高、但較舊的季度",
+    },
+    {
+        "category": "超出資料時間範圍（不存在的未來財季）",
+        "question": "美光FY2027Q1的營收預測是多少？",
+        "tickers": ["MU"],
+        "expected": "資料庫目前只到 FY2026Q3，應誠實回答查無資料，不可用其他財季數字硬湊或幻覺",
+    },
     {
         "category": "資料庫未涵蓋的公司",
         "question": "SK海力士（SK Hynix）最新一季的財報表現如何？",
         "tickers": ["000660"],
         "expected": "資料庫完全沒有這家公司的資料，應回答查無資料，不可誤用其他三家公司的數字回答",
     },
-    # {
-    #     "category": "超出文件類型範圍（annual_report 尚未 ingest）",
-    #     "question": "華邦電年度財報中會計師查核意見為何？",
-    #     "tickers": ["2344"],
-    #     "collection": "annual_report",
-    #     "expected": "annual_report collection 目前是空的（尚未跑過 page_filter/chunker/ingest），應回答查無資料",
-    # },
+    {
+        "category": "超出文件類型範圍（annual_report 尚未 ingest）",
+        "question": "華邦電年度財報中會計師查核意見為何？",
+        "tickers": ["2344"],
+        "collection": "annual_report",
+        "expected": "annual_report collection 目前是空的（尚未跑過 page_filter/chunker/ingest），應回答查無資料",
+    },
 ]
 
 
@@ -127,6 +128,30 @@ def main():
         if sources:
             print()
             print(sources)
+
+        #--3.專業術語比對（src/rag/glossary_matcher.py）：
+        # 從問題與「實際檢索到的財報原文」（不是 LLM 回答，避免 LLM 改寫用詞或
+        # 把查無資料的固定回覆句誤判成術語）擷取候選術語，再用已 ingest 的
+        # glossary collection 做語意檢索，找出對應的官方中英譯名。
+        # context 是空的代表沒有真正的術語來源可以擷取；比對不到可信結果的
+        # 候選詞也不用顯示——沒東西可看就不印這個區塊。
+        matches = []
+        if context.strip():
+            if "glossary" not in collections:
+                collections["glossary"] = get_collection(client, "glossary")
+            candidate_terms = extract_terms(f"{case['question']}\n{context}")
+            if candidate_terms:
+                matches = match_terms(candidate_terms, collections["glossary"])
+        if matches:
+            print()
+            # 這份 glossary 是 IFRS/US GAAP 財務會計詞彙表，不含產業/技術詞彙
+            # （例如 DRAM、CDBU 這類半導體業務用語），比對結果請以此為前提解讀。
+            print("專業術語(詞彙庫範圍：IFRS)：")
+            for m in matches:
+                print(
+                    f"  - {m['query_term']} -> {m['term_en']} / {m['term_zh']}"
+                    f" (distance={m['distance']:.4f})"
+                )
         print()
 
 
