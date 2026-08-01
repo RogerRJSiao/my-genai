@@ -13,28 +13,33 @@ python scripts/generate_manifest.py
 
 | 階段 | 資料夾 | 產生腳本 | 內容 |
 | --- | --- | --- | --- |
-| 中繼（parsed） | `data/processed/parsed/` | `src/parser/page_filter.py` | 過濾過場頁/免責聲明頁後的乾淨文字，附章節 metadata |
-| 最終（chunks） | `data/processed/chunks/` | `src/parser/chunker.py` | 合併 manifest metadata 後的 chunk，格式可直接餵給 ChromaDB |
+| 中繼（parsed） | `data/processed/parsed/` | `src/parser/page_filter.py`（財報）／`src/parser/glossary_parser_*.py`（詞彙表） | 財報：過濾過場頁/免責聲明頁後的乾淨文字，附章節 metadata。詞彙表：逐詞條解析出的 `{item, term_en, term_zh, ...}` list |
+| 最終（chunks） | `data/processed/chunks/` | `src/parser/chunker.py`（財報，一頁一 chunk）／`glossary_parser_*.py` 的 `build_*_chunks()`（詞彙表，一詞條一 chunk） | 合併 manifest metadata 後的 chunk，格式可直接餵給 ChromaDB |
 | 向量化（chroma_db） | `data/chroma_db/` | `scripts/ingest_data.py` | 寫入 ChromaDB 的向量與 metadata，供檢索用 |
 
 不同階段的產物放在不同資料夾，而非同一層用檔名後綴區分，方便日後用 glob（如 `data/processed/chunks/**/*.json`）一次批次處理某個階段的全部產物。
 
+財報類文件（`annual_report`／`quarterly_earningcall`）與詞彙表類文件（`glossary`）走兩條不同的 parsed→chunks 路徑，但兩者的 chunk 輸出格式（`{"id","document","metadata"}`）與最終寫入 ChromaDB 的方式完全一致，`ingest_data.py`／`chroma_client.py` 不需要區分來源格式，見下方「Glossary 詞彙表的特殊處理」。
+
 ```mermaid
 flowchart LR
-    raw[("data/raw/**/*\n(PDF / HTML)")]
+    raw[("data/raw/**/*\n(PDF / HTML / Markdown)")]
     gm["scripts/generate_manifest.py"]
     manifest[("data/manifest.json")]
     pf["src/parser/page_filter.py\n(pdfplumber 過濾過場頁/免責聲明頁\n章節標題 → metadata)"]
     parsed[("data/processed/parsed/**/*.json")]
-    ck["src/parser/chunker.py\n(合併 manifest 欄位\n轉成 chunk 格式)"]
+    ck["src/parser/chunker.py\n(合併 manifest 欄位\n轉成 chunk 格式，一頁一 chunk)"]
     chunks[("data/processed/chunks/**/*.json")]
+    gp["src/parser/glossary_parser_tifrs.py (PDF)\nglossary_parser_semiconductor.py (Markdown)\n(逐詞條解析 + 直接組 chunk，一詞條一 chunk)"]
     ingest["scripts/ingest_data.py\n(呼叫 src/database/chroma_client.py)"]
     chroma[("ChromaDB (data/chroma_db/)\nembedding: Ollama bge-m3\ncollection: annual_report /\nquarterly_earningcall / glossary")]
     vision["Vision model / Marker\n(尚未串接，未來讀圖表)"]
 
     raw --> gm --> manifest
     raw --> pf
+    raw --> gp
     manifest --> pf --> parsed
+    manifest --> gp --> chunks
     parsed --> ck
     manifest --> ck --> chunks
     chunks --> ingest --> chroma
@@ -101,23 +106,48 @@ python scripts/ingest_data.py "data/processed/chunks/.../新檔案.json"  # 只�
 
 ⚠️ **Embedding 模型**：`src/database/chroma_client.py` 固定使用 README §1 指定的 Ollama `bge-m3:latest`（透過 `chromadb.utils.embedding_functions.OllamaEmbeddingFunction`，需本機 Ollama 服務可連線），而非 Chroma 預設的英文 `all-MiniLM-L6-v2`，以確保英文財報段落與繁中提問能語意對齊。若日後更換 embedding 模型或版本，向量維度可能改變，需先清空 `data/chroma_db/`、重置相關項目的 `ingestion_status` 後全部重新 ingest，不能與舊向量混用同一個 collection。
 
+⚠️ **批次寫入上限**：`chroma_client.upsert_chunks()` 內建每批 100 筆分批寫入（`_UPSERT_BATCH_SIZE`）。曾經一次把近 2000 筆詞彙表詞條全部丟給 Ollama 的 `/embed` 端點，導致其模型 runner 掛掉、後續請求全部連線被拒；新增大量 chunk（尤其是詞彙表這種一次上千筆的情境）務必確認走的是分批後的 `upsert_chunks()`，不要繞過它直接呼叫 `collection.upsert()`。
+
+## Glossary 詞彙表的特殊處理
+
+`doc_category: "glossary"` 的文件（中英對照詞彙表）**不走** `page_filter.py`／`chunker.py`：這兩支是為了處理財報頁面「圖表＋表格＋敘述文字混雜」的版面設計的，套在乾淨的詞彙表格上是殺雞用牛刀，而且「一頁一 chunk」會把每頁十幾到數十個詞條混進同一個 chunk，語意檢索時被同頁其他不相關詞條稀釋、精準度變差。
+
+詞彙表改用**專屬解析器**，命名規則為 `src/parser/glossary_parser_{類型}.py`，直接輸出「一詞條一 chunk」：
+
+| 詞彙表 | 來源格式 | 解析器 | 詞條數 |
+| --- | --- | --- | --- |
+| `tifrs_glossary_latest` | PDF（3 欄表格：Item / Term in English / Term in Chinese） | `src/parser/glossary_parser_tifrs.py` | 1949 |
+| `semiconductor_glossary_latest` | Markdown（`## ` 分節 + 3 欄表格：英文／中文／說明） | `src/parser/glossary_parser_semiconductor.py` | 53 |
+
+兩者 chunk 內容都是 `document = "English: {term_en}\nChinese: {term_zh}"`（半導體詞彙表另外附加 `Description: {description}`），寫進同一個 ChromaDB `glossary` collection，用 metadata 的 `source_id` 區分來源，不需要為每份詞彙表另開一個 collection。
+
+### 新增一份詞彙表的步驟
+
+1. 把來源檔案放進 `data/raw/glossary/`。
+2. 在 `scripts/generate_manifest.py` 的 `GLOSSARY_INFO` dict 裡註冊該檔名對應的 `doc_type`／`language`／`accounting_standard`／`source_url`——**沒有註冊就重跑會直接報錯**（避免新詞彙表被誤套用到別份詞彙表的來源資訊）。
+3. 依來源格式選用或新寫一支 `src/parser/glossary_parser_{類型}.py`，輸出格式需比照既有兩支：`parse_*()` 回傳詞條 list（至少含 `term_en`／`term_zh`），`build_*_chunks(doc_id, terms)` 轉成 `{"id","document","metadata"}` chunk 陣列。
+4. 重跑 `python scripts/generate_manifest.py` → 執行新解析器輸出 parsed／chunks JSON → `python scripts/ingest_data.py <chunks_path>`。
+5. `src/rag/glossary_lookup.py`（精確比對，不透過 embedding）與 `src/rag/glossary_matcher.py`（LLM 抓詞 + 語意比對）都會自動涵蓋新詞彙表，前者掃描 `data/processed/parsed/glossary/*.json` 全部檔案、後者查詢的是整個 `glossary` collection，不需要另外修改。
+
+⚠️ **manifest 重新產生的副作用**：`generate_manifest.py` 是整份覆寫 `data/manifest.json`，每次重跑都會把**所有**文件的 `ingestion_status` 重置回 `pending`（不只是新增的那筆）。這不影響 ChromaDB 裡已經 ingest 的資料（`upsert` 是 idempotent），但跑完後記得對其餘已完成的文件重新跑一次 `python scripts/ingest_data.py`（不帶參數，補齊全部 `pending` 項目）把狀態補回 `ingested`。
+
 ## 欄位總表
 
 | 欄位 | 型別 | 適用範圍 | 說明 |
 | --- | --- | --- | --- |
 | `id` | string | 全部 | 檔名（去除副檔名），作為唯一鍵，不隨路徑搬動而改變 |
 | `raw_path` | string | 全部 | 對應 `data/raw/` 的相對路徑 |
-| `parsed_path` | string | 全部 | `page_filter.py` 應寫入的中繼產物路徑，對應 `data/processed/parsed/` |
-| `chunks_path` | string | 全部 | `chunker.py` 應寫入的最終 chunk 路徑，對應 `data/processed/chunks/`，可直接餵給 ChromaDB |
+| `parsed_path` | string | 全部 | 中繼產物路徑，對應 `data/processed/parsed/`；財報類由 `page_filter.py` 寫入，glossary 類由對應的 `glossary_parser_*.py` 寫入 |
+| `chunks_path` | string | 全部 | 最終 chunk 路徑，對應 `data/processed/chunks/`，可直接餵給 ChromaDB；財報類由 `chunker.py` 寫入，glossary 類由 `glossary_parser_*.py` 的 `build_*_chunks()` 寫入 |
 | `collection` | string | 全部 | 對應的向量資料庫 collection：`annual_report`／`quarterly_earningcall`／`glossary` |
 | `market` | string \| null | 除 glossary 外 | 發行股票市場，`US`／`TW` |
 | `ticker` | string \| null | 除 glossary 外 | 股票代碼 |
 | `company_name` | string \| null | 除 glossary 外 | 公司英文全名 |
 | `company_name_zh` | string \| null | 除 glossary 外 | 公司中文名稱，供繁體中文回答時 citation 使用 |
 | `doc_category` | string | 全部 | 上層分類：`annual_report`／`quarterly_earningcall`／`glossary` |
-| `doc_type` | string | 全部 | 下層文件類型：`10K`／`AIA`／`investor-conference`／`earning-deck`／`prepared-remarks`／`tifrs-glossary` |
-| `file_format` | string | 全部 | 實際檔案格式：`html`／`pdf`，決定要套用哪個 parser |
-| `language` | string | 全部 | 文件語言：`en`（三家公司皆抓英文版財報/簡報）、`zh-en`（glossary 為中英對照） |
+| `doc_type` | string | 全部 | 下層文件類型：`10K`／`AIA`／`investor-conference`／`earning-deck`／`prepared-remarks`／`tifrs-glossary`／`semiconductor-glossary`（glossary 類的 `doc_type` 對照表見 `scripts/generate_manifest.py` 的 `GLOSSARY_INFO`） |
+| `file_format` | string | 全部 | 實際檔案格式：`html`／`pdf`／`md`，決定要套用哪個 parser |
+| `language` | string | 全部 | 文件語言：`en`（三家公司皆抓英文版財報/簡報）、`zh-en`（glossary 皆為中英對照） |
 | `accounting_standard` | string \| null | 除 glossary 外 | `US GAAP`（美股）／`T-IFRS`（台股），決定是否需要套用會計科目對照表做語意橋接 |
 | `fiscal_year` | string \| null | 全部（除 glossary） | 財年標籤 `FY{年}`（不含季度）。從檔名的 `FY{年}[Q{n}]` 片段取得年份部分；annual_report 若檔名未帶 `FY{年}`，退回用結算日反推 |
 | `fiscal_period` | string \| null | quarterly_earningcall | 完整財季標籤 `FY{年}Q{n}`（如 `FY2025Q1`），annual_report 恆為 `null` |
