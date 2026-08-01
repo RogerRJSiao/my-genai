@@ -7,9 +7,16 @@ import re
 TOP_K = 3
 
 # 語意檢索無法理解「最近/最新」等時間詞：這類問題 embedding 距離最近的段落，
-# 不一定是日期最新的財季。偵測到這類關鍵字時改用 metadata（event_date）先鎖定
-# 該公司最新一期，再於該期範圍內做語意排序，避免回傳語意相似但過時的資料。
+# 不一定是日期最新的財季。偵測到這類關鍵字時改用 metadata 先鎖定該公司最新一期，
+# 再於該期範圍內做語意排序，避免回傳語意相似但過時的資料。
 _RECENCY_KEYWORDS = ("最近", "最新", "近期", "latest", "recent")
+
+# 「最新」要看哪個日期欄位，依 doc_category 而異：quarterly_earningcall 用
+# event_date（法說會召開日），annual_report 沒有 event_date，要用
+# fiscal_period_end（財報結算日）。依序檢查，metadata 裡哪個欄位有值就用哪個，
+# 不用另外傳 doc_category 判斷（曾經寫死只查 event_date，導致 annual_report
+# 的「最新」提問完全失效、退回純語意排序抓到舊財年資料）。
+_RECENCY_FIELDS = ("event_date", "fiscal_period_end")
 
 
 def _is_recency_question(question):
@@ -17,14 +24,18 @@ def _is_recency_question(question):
     return any(kw in question or kw in q for kw in _RECENCY_KEYWORDS)
 
 
-def _latest_event_date(collection, ticker):
-    """回傳該 ticker 在此 collection 底下最新的 event_date（無資料或無日期則回傳 None）。
-
-    event_date 存成 "YYYY-MM-DD" ISO 格式字串，可直接用字串比較取最大值。
+def _latest_recency_field(collection, ticker):
+    """回傳 (欄位名, 最新值) 用來鎖定該 ticker 最新一期；兩個候選欄位都沒有
+    資料則回傳 (None, None)。日期都存成 "YYYY-MM-DD" ISO 格式字串，可直接用
+    字串比較取最大值。
     """
     res = collection.get(where={"ticker": ticker}, include=["metadatas"])
-    dates = [m.get("event_date") for m in res["metadatas"] if m.get("event_date")]
-    return max(dates) if dates else None
+    metadatas = res["metadatas"]
+    for field in _RECENCY_FIELDS:
+        values = [m.get(field) for m in metadatas if m.get(field)]
+        if values:
+            return field, max(values)
+    return None, None
 
 
 # 問題若明確點名財季（如「FY2026Q2」），檢索時應直接鎖定該財季而非交給語意相似度
@@ -46,9 +57,9 @@ def retrieve(collection, question, tickers, top_k=TOP_K):
     for ticker in tickers:
         where = {"ticker": ticker}
         if recency:
-            latest = _latest_event_date(collection, ticker)
+            field, latest = _latest_recency_field(collection, ticker)
             if latest:
-                where = {"$and": [{"ticker": ticker}, {"event_date": latest}]}
+                where = {"$and": [{"ticker": ticker}, {field: latest}]}
         elif periods:
             period_filter = (
                 {"fiscal_period": periods[0]}
@@ -101,10 +112,13 @@ def format_sources(hits):
     seen = set()
     lines = []
     for id_, doc, meta, dist in hits:
-        key = (meta.get("source_id"), meta.get("page"))
-        if key in seen:
+        # 用 chunk 自己的 id 去重（保證唯一）：原本用 (source_id, page) 組 key，
+        # 但 annual_report 這類「一份文件多個 chunk、沒有 page」的來源
+        # （如 10-K 的 4 張報表）共用同一個 source_id 且 page 都是空值，
+        # 會被誤判成同一筆而錯誤地把其他報表的引用擠掉。
+        if id_ in seen:
             continue
-        seen.add(key)
+        seen.add(id_)
         lines.append(
             f"- {meta.get('company_name_zh') or meta.get('ticker')}"
             f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} /"
