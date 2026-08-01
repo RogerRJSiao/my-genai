@@ -153,6 +153,10 @@ python tests/test_ollama.py
 | 南亞科 | 公開資訊觀測站 查核報告 (PDF) | 2021-12-31 起算 5 年 | https://mops.twse.com.tw/mops/#/web/t57sb01_q1 <br>(查股票代碼 2408，英文版財報) |
 | 華邦電 | 公開資訊觀測站 查核報告 (PDF) | 2021-12-31 起算 5 年 | https://mops.twse.com.tw/mops/#/web/t57sb01_q1 <br>(查股票代碼 2344，英文版財報) |
 
+> ⚠️ 南亞科、華邦電的年報僅存放於 `data/raw/`、已列入 `manifest.json`，但尚未實際跑 `ingest_data.py` 寫入向量資料庫，目前檢索/問答涵蓋範圍僅限美光 (MU)。
+>
+> 美光 10-K 也只解析並存入四大財務報表（資產負債表、綜合損益表、現金流量表、股東權益變動表，見 `annual_report_parser_us10k.py` 的 `STATEMENTS`），10-K 其餘章節（如 MD&A、風險因子、附註）目前直接捨棄、未進向量資料庫。
+
 ### `data/raw/investor/`（法說會相關文件）
 
 | 公司 | 說明 | 會計年度 | 來源連結 |
@@ -161,11 +165,18 @@ python tests/test_ollama.py
 | 南亞科 | 法說會相關文件 (PDF) | FY2025Q1 - FY2026Q1 | https://finmoconf.diveinvest.net <br>(查股票代碼 2408，英文簡報) |
 | 華邦電 | 法說會相關文件 (PDF) | FY2025Q1 - FY2026Q1 | https://finmoconf.diveinvest.net <br>(查股票代碼 2344，英文簡報) |
 
-### `data/raw/glossary/`（會計用語對照表）
+> 法說會文件只保留每家公司最新一份資料，且該份文件的每一頁都會納入向量資料庫（封面頁除外）。
 
-| 文件說明 | 來源連結 |
-| --- | --- |
-| 財團法人會計研究發展基金會<br>重要會計用語中英對照 | https://www.ardf.org.tw/tifrs2.html |
+### `data/raw/glossary/`（專業用語對照表）
+
+| 文件說明 | 原始格式 | 來源連結 |
+| --- | --- | --- |
+| 財團法人會計研究發展基金會<br>重要會計用語中英對照 | PDF | https://www.ardf.org.tw/tifrs2.html |
+| Uedu 優學院<br>半導體產業專有名詞中英對照 | Markdown（透過 Claude Code 先手動轉網頁資訊） | https://uedu.tw/semiconductor/glossary |
+
+> 性質類似字典檔，或俗稱的（中英）對照表；每份只保留最新版本。用途：橋接中文提問用語與英文財報欄名，提升回答準確率。
+
+---
 
 <details>
 <summary>📁 原始資料檔名規範與資料夾結構建議 (Raw Data Naming & Folder Conventions)</summary>
@@ -238,6 +249,8 @@ python scripts/generate_manifest.py
 ```
 
 </details>
+
+---
 
 ## 🩺 6. RAG 生成鏈路除錯記錄
 
