@@ -18,7 +18,16 @@ SYSTEM_PROMPT = (
 )
 
 
+NO_CONTEXT_ANSWER = "查無相關資料，系統中沒有找到與此問題相關的財報段落，無法回答。"
+
+
 def generate_answer(question, context):
+    # context 為空代表檢索完全沒有結果：與其信任 LLM 會依 prompt 指示誠實說查無
+    # 資料（實測發現它常常改用訓練時的記憶硬答，例如編造 SK海力士的舊財報數字），
+    # 不如在有把握判斷「絕對沒有依據」的這個情況下，直接攔截不呼叫 LLM。
+    if not context.strip():
+        return NO_CONTEXT_ANSWER
+
     response = ollama.chat(
         model=LLM_MODEL,
         messages=[
