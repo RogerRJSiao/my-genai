@@ -8,3 +8,6 @@
 ollama==0.6.2
 chromadb==1.5.9
 pdfplumber==0.11.10
+fastapi==0.141.1
+uvicorn==0.51.0
+httpx==0.28.1  # fastapi.testclient.TestClient 依賴，供 scripts/test_api.py 使用
