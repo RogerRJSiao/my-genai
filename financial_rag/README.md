@@ -65,8 +65,40 @@ python tests/test_ollama.py
 [部署階段]  Docker Container + Nvidia Container Toolkit (實現開發即部署)
 ```
 
-- **開發階段（當前）**：使用 Anaconda 虛擬環境開發，專案完成後執行 `pip freeze > requirements.txt` 匯出依賴。
+- **開發階段（當前）**：使用 Anaconda 虛擬環境開發，依賴已整理成 [requirements.txt](requirements.txt)（只列專案程式碼直接 import 的套件並釘死版本，不用 `pip freeze` 整包匯出，避免把尚未真正使用的套件也一併凍結進去，見套件選型章節）。
 - **部署階段（未來）**：採用 Docker + Docker Compose 架構，將 Python 後端、向量資料庫（如 ChromaDB / Qdrant）與 Ollama 容器化，可快速部署至任何 Linux / 雲端伺服器。
+
+<details>
+<summary>✅ RAG 專案部署階段必要流程 (Deployment Checklist)</summary>
+
+部署到新環境（或重建現有環境）時，依序需要完成以下步驟，缺一不可：
+
+1. **安裝依賴**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **準備 Ollama 模型**：部署環境需要能存取 GPU 的 Ollama 服務，並預先下載本專案用到的兩顆模型（見 §1 模型配置表）：
+   ```bash
+   ollama pull jcai/llama-3-taiwan-8b-instruct:q4_k_m
+   ollama pull bge-m3
+   ```
+   若磁碟空間規劃在非系統碟，記得設定 `OLLAMA_MODELS` 環境變數指到對應路徑。
+
+3. **持久化儲存掛載**：以下目錄／檔案是狀態資料，容器重啟/重新部署時不能遺失，必須掛載成 volume：
+   - `data/raw/`、`data/manifest.json`（原始文件與索引）
+   - `data/processed/parsed/`、`data/processed/chunks/`（前處理中繼產物）
+   - `data/chroma_db/`（向量資料庫本體）
+
+4. **建立/回填向量資料庫**：兩種方式擇一——
+   - **重新跑一次 pipeline**（適合資料有變動時）：`generate_manifest.py` → 對每份新文件跑 `page_filter.py`／`chunker.py` → `ingest_data.py`（詳見 [docs/manifest_schema.md](docs/manifest_schema.md) 的 SOP）
+   - **直接帶著現有的 `data/chroma_db/` 一起部署**（適合資料沒變、只是換環境時），省去重新處理耗時的 PDF 解析與 embedding
+
+5. **GPU passthrough**：容器化部署時需要 Nvidia Container Toolkit，讓 Ollama 容器內的 LLM／embedding 推論能存取 GPU，否則會退回 CPU 造成回應時間大幅增加。
+
+6. **部署前健康檢查（smoke test）**：跑 [scripts/test_rag_chain.py](scripts/test_rag_chain.py) 的 golden set，確認 Ollama 模型、ChromaDB 連線、檢索結果都正常，再讓服務正式對外。
+
+</details>
 
 ## 📂 5. 資料來源 (Data Sources)
 

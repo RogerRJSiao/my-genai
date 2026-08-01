@@ -1,0 +1,10 @@
+# 專案程式碼實際 import 的第三方套件（見 README.md §2），只列直接依賴、
+# 由 pip 自行解析其餘 transitive 依賴版本。
+#
+# 刻意不用 `pip freeze` 整包匯出：目前環境裡還裝著幾個尚未真正使用的套件
+# （langchain/langgraph 系列，為未來 RAG chain 整合預先裝的），一併凍結進來
+# 會讓 requirements.txt 反映「裝了什麼」而非「跑起來需要什麼」，之後真的開始用
+# LangChain 時再補上即可。
+ollama==0.6.2
+chromadb==1.5.9
+pdfplumber==0.11.10
