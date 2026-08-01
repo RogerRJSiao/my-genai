@@ -88,6 +88,30 @@ def _extract_balanced_table_html(html_text, from_offset):
     return html_text[start:pos]
 
 
+def _clean_row_cells(cells):
+    """把「$」符號跟空白佔位格併回實際數值，讓每列的儲存格數與期間數對得上。
+
+    EDGAR 這類表格排版習慣把金額拆成三個 <td>：「$」、數字本體、空白佔位格
+    （用來對齊縮排），逐一保留反而會讓每一列的儲存格數量長短不一，跟表頭的
+    期間欄位對不齊——實測發現這會讓 LLM 把「這一欄的金額」誤讀成「下一欄的
+    科目」（例如把 Common Stock 的金額誤認成 Additional Capital）。把「$」
+    併到緊接著的下一格、丟掉純空白格，才能讓資料格數確實對應期間數。
+    """
+    cleaned = []
+    i = 0
+    while i < len(cells):
+        cell = cells[i]
+        if cell == "$" and i + 1 < len(cells):
+            cleaned.append(f"${cells[i + 1]}")
+            i += 2
+        elif cell == "":
+            i += 1
+        else:
+            cleaned.append(cell)
+            i += 1
+    return cleaned
+
+
 def _table_html_to_rows(table_html):
     """把表格 HTML 轉成 list of list 字串（供 table_rows_to_markdown 使用）。
 
@@ -104,7 +128,7 @@ def _table_html_to_rows(table_html):
         if tr.find_parent("table") is not outer_table:
             continue
         cells = [cell.get_text(" ", strip=True) for cell in tr.find_all(["td", "th"])]
-        rows.append(cells)
+        rows.append(_clean_row_cells(cells))
     return rows
 
 
@@ -133,6 +157,27 @@ def parse_us10k_statements(html_path):
     return statements
 
 
+# 權益變動表（equity_statement）跟其他三張報表結構不同：每一列是「某個時間點的
+# 權益變化」（期初餘額、淨利、股利、庫藏股...一路滾到期末餘額），不是每欄一個
+# 期間。完整表格可能有 20-30 列橫跨 3 個財年，餵給 LLM 時容易在一長串列表裡
+# 漏抓最後一列（實測驗證過：問「最新年度」的資本公積/保留盈餘，LLM 常常找不到
+# 埋在第 26 列的答案）。只保留表頭列＋最後一列（最新一期的期末餘額），把
+# LLM 需要在長表格裡定位資訊的負擔去掉。
+#
+# 其餘三張報表（資產負債表／損益表／現金流量表）是「每列一個科目、每欄一個期間」
+# 的結構，理論上也能只留當期欄位，但實測發現同一張表不同列的儲存格數量並不規則
+# （部分列多了「$」符號儲存格、部分列尾端多出空白佔位格），單純依欄位數量猜當期
+# 資料在哪風險很高，裁錯就會把錯誤數字放進 context，比維持現狀更糟，故先不處理。
+_EQUITY_STATEMENT_KEY = "equity_statement"
+
+
+def _trim_equity_statement_rows(rows):
+    """只保留表頭列（前兩列的欄位標籤）與最後一列（最新一期的期末餘額）。"""
+    if len(rows) <= 3:
+        return rows
+    return rows[:2] + [rows[-1]]
+
+
 def build_us10k_chunks(doc_id, statements, manifest_entry):
     """把每個報表轉成一個 chunk（一報表一 chunk），格式相容 ingest_data.py。
 
@@ -147,7 +192,10 @@ def build_us10k_chunks(doc_id, statements, manifest_entry):
 
     chunks = []
     for stmt in statements:
-        document = table_rows_to_markdown(stmt["rows"], caption=stmt["label_en"])
+        rows = stmt["rows"]
+        if stmt["key"] == _EQUITY_STATEMENT_KEY:
+            rows = _trim_equity_statement_rows(rows)
+        document = table_rows_to_markdown(rows, caption=stmt["label_en"])
         if not document:
             continue
         chunks.append(
