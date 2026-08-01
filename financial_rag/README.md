@@ -198,6 +198,10 @@ python scripts/generate_manifest.py
 
 </details>
 
+## 🩺 6. RAG 生成鏈路除錯記錄
+
+`src/rag/` 的檢索/生成鏈路已知限制與修正記錄（表格 colspan/rowspan 解析、取樣溫度、中英術語對應、單位/負數判讀等），見 [docs/rag_generation_notes.md](docs/rag_generation_notes.md)，遇到「明明檢索到資料、LLM 卻答錯或查無資料」時可先查這份文件。
+
 ## 📌 當前進度摘要
 
 - [x] Step 1：Ollama 安裝、模型下載（llama-3-taiwan & bge-m3）與 D 槽路徑修正。
