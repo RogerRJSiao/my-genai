@@ -62,7 +62,7 @@ def _mentioned_fiscal_years(question):
 
 
 # annual_report 一份 10-K 目前固定拆成四張報表 chunk（見
-# annual_report_parser_us10k.py 的 STATEMENTS），問題若點名其中一張，就该
+# annual_report_parser_us10k.py 的 STATEMENTS），問題若點名其中一張，就該
 # 鎖定該張報表的 chunk，避免另外三張報表（同一財年、語意也可能沾邊，例如
 # 資產負債表跟權益變動表都會提到「保留盈餘」）一起塞進 context 干擾 LLM。
 # key 要對應 metadata 的 "statement" 欄位值；keyword 用 tuple 因為中英文/

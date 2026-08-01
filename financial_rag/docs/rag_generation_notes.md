@@ -33,7 +33,7 @@
 
 ## 問題 4：中文財會術語對不到英文表格欄名
 
-**症狀**：問題用中文財會慣用語（「資本公積」「保留盈餘」），表格欄位是英文（"Additional Capital"、"Retained Earnings"），即使數字位置完全正確，模型也常判斷「查無資料」。實測换成英文問法（"Additional Capital 與 Retained Earnings"）就能答對，證實卡點在中英對應這一步，不是檢索或資料本身的問題。
+**症狀**：問題用中文財會慣用語（「資本公積」「保留盈餘」），表格欄位是英文（"Additional Capital"、"Retained Earnings"），即使數字位置完全正確，模型也常判斷「查無資料」。實測換成英文問法（"Additional Capital 與 Retained Earnings"）就能答對，證實卡點在中英對應這一步，不是檢索或資料本身的問題。
 
 **修正**：`src/rag/glossary_matcher.py`（LLM 抓詞 + 對 `glossary` collection 語意檢索找官方中英對照）原本只在生成**之後**執行，純供人工核對用（見 `scripts/test_rag_chain.py` 的「專業術語比對」區塊），沒有真正餵進 LLM 看到的 context。現在改成生成**之前**先跑，比對結果透過 `generate_answer(question, context, glossary_matches=...)` 的新參數餵進 prompt（`_format_glossary_hint()` 組成的提示區塊），明講「僅供參考、不是文件內容」避免模型誤把提示當成財報數字來源。
 
