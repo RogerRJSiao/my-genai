@@ -2,6 +2,19 @@
 
 本專案旨在建立一個以檢索增強生成（RAG, Retrieval-Augmented Generation）為核心的 AI 系統，能精準讀取並分析英文財務報告，並以流暢的繁體中文回答相關問題。
 
+<details>
+<summary>🖼️ 財報 RAG 問答系統 (以 GUI 網頁呈現)</summary>
+
+輸入問題、可選公司代碼／財年財季／檢索範圍：
+
+![FastAPI 靜態網頁：問題輸入表單](images/FinancialRAG_靜態網頁_01.png)
+
+送出後顯示回答、引用來源與專業術語比對表：
+
+![FastAPI 靜態網頁：RAG 回答結果與術語比對](images/FinancialRAG_靜態網頁_02.png)
+
+</details>
+
 ## 🛠️ 1. 系統硬體與模型配置 (Environment & Models)
 
 - **硬體資源**：Nvidia GPU (12 GB VRAM)
@@ -13,6 +26,23 @@
 | Embedding (向量化) | [`bge-m3:latest`](https://ollama.com/library/bge-m3) | ~1.2 GB (567M) | 強大的跨語言語意模型（生成 1024 維度向量），負責將英文財報段落與中文提問進行語意對齊。 |
 
 > 💡 **VRAM 載入注意事項**：Ollama 預設會在閒置 5 分鐘後自動將模型從 VRAM 釋放（卸載至 0.0 GB），發送新請求時會自動重新載入，屬正常的省電與資源釋放機制。若希望模型永久常駐顯存，可在呼叫時帶入 `keep_alive="-1"`。
+
+<details>
+<summary>🖼️ 模型下載與 GPU 資源確認</summary>
+
+`ollama pull` 下載 LLM 與 embedding 模型：
+
+![ollama pull 下載 llama-3-taiwan LLM](images/AIModel_下載模型_01.png)
+
+確認 `OLLAMA_MODELS` 環境變數指向 `D:\ollama_models`，且 `ollama list` 顯示兩顆模型皆已就緒：
+
+![ollama list 確認模型已下載至 D 槽](images/AIModel_下載模型_02.png)
+
+透過工作管理員確認推論時實際使用的是獨立顯卡（NVIDIA GeForce RTX 3060）而非內顯：
+
+![工作管理員 GPU 資源監控](images/AIModel_下載模型_03.png)
+
+</details>
 
 ## 🐍 2. 開發環境建置 (Anaconda / Environment Setup)
 
@@ -56,6 +86,13 @@ conda activate financial_rag
 python tests/test_ollama.py
 ```
 
+<details>
+<summary>🖼️ 執行結果</summary>
+
+![test_ollama.py 執行結果：LLM 繁體中文回應與 embedding 向量生成](images/AIModel_下載模型_04.png)
+
+</details>
+
 ## 🚀 4. 未來部署與架構規劃 (Deployment Roadmap)
 
 ```
@@ -69,8 +106,8 @@ python tests/test_ollama.py
 ```
 
 - **開發階段（當前）**：使用 Anaconda 虛擬環境開發，依賴已整理成 [requirements.txt](requirements.txt)（只列專案程式碼直接 import 的套件並釘死版本，不用 `pip freeze` 整包匯出，避免把尚未真正使用的套件也一併凍結進去，見套件選型章節）。目前 RAG 鏈路只能透過腳本呼叫，還沒有對外服務介面。
-- **API 階段（下一步）**：用 FastAPI 把 `src/rag/retriever.py`／`generator.py` 封裝成 HTTP 端點，這是比直接上 Docker 更優先的一步——Docker 只負責把「已存在的服務」打包成可攜的部署單位，本身不會憑空產生服務能力；容器化一個沒有對外介面的腳本沒有實質效益。
-- **部署階段（未來）**：等 FastAPI 服務就緒後，採用 Docker + Docker Compose 架構，將 Python 後端（FastAPI）、向量資料庫（如 ChromaDB / Qdrant）與 Ollama 容器化，可快速部署至任何 Linux / 雲端伺服器。
+- **API 階段（已完成）**：用 FastAPI 把 `src/rag/retriever.py`／`generator.py` 封裝成 HTTP 端點（`src/api/main.py`），並附上瀏覽器端查詢頁面（`src/api/static/index.html`）方便手動測試，這是比直接上 Docker 更優先的一步——Docker 只負責把「已存在的服務」打包成可攜的部署單位，本身不會憑空產生服務能力；容器化一個沒有對外介面的腳本沒有實質效益。
+- **部署階段（下一步）**：等 FastAPI 服務就緒後，採用 Docker + Docker Compose 架構，將 Python 後端（FastAPI）、向量資料庫（如 ChromaDB / Qdrant）與 Ollama 容器化，可快速部署至任何 Linux / 雲端伺服器。
 
 <details>
 <summary>✅ RAG 專案部署階段必要流程 (Deployment Checklist)</summary>
