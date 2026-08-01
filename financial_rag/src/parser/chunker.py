@@ -8,6 +8,8 @@
 metadata 只放純量值，因為 ChromaDB 限制 metadata 值只能是 str/int/float/bool：
 - 來源頁面的 "section" 若為 None，改存空字串 ""
 - 來源頁面的 "charts"（list）序列化成 JSON 字串存在 "charts_json"，另外用 "has_charts" 記錄是否有內容
+- 來源頁面的 "tables"（Markdown table 字串陣列）接在正文後面一起存進 document，
+  讓表格內容也能被檢索到；另外用 "has_tables" 記錄該頁是否含表格
 
 目前為 MVP：一個 valid page = 一個 chunk，尚未做進一步的階層感知切塊
 （如按段落/表格再細切），後續若頁面內容過長可在此擴充。
@@ -63,8 +65,9 @@ def build_chunks(valid_pages_path):
 
     chunks = []
     for page in data["valid_pages"]:
-        text = page["text"]
         charts = page.get("charts", [])
+        tables = page.get("tables", [])
+        document = "\n\n".join([page["text"], *tables])
         metadata = {
             **base_metadata,
             "source_id": doc_id,
@@ -72,12 +75,13 @@ def build_chunks(valid_pages_path):
             "section": to_scalar_metadata(page.get("section")),
             "has_charts": bool(charts),
             "charts_json": json.dumps(charts, ensure_ascii=False),
-            "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "has_tables": bool(tables),
+            "content_hash": hashlib.sha256(document.encode("utf-8")).hexdigest(),
         }
         chunks.append(
             {
                 "id": f"{doc_id}_p{page['page']}",
-                "document": text,
+                "document": document,
                 "metadata": metadata,
             }
         )
