@@ -35,5 +35,9 @@ def generate_answer(question, context):
             {"role": "user", "content": f"財報段落：\n{context}\n\n問題：{question}"},
         ],
         keep_alive="10s",
+        # 財報數字比對需要跨欄位讀表，實測發現預設取樣溫度會讓同一組 context
+        # 有時答對有時答錯（見 2026-08-01 除錯）；設 0 用 greedy decoding 讓
+        # 輸出穩定，不會消除模型讀表能力的極限，但至少同樣輸入不會隨機翻車。
+        options={"temperature": 0},
     )
     return response["message"]["content"]

@@ -49,31 +49,93 @@ def _mentioned_fiscal_periods(question):
     return _FISCAL_PERIOD_PATTERN.findall(question)
 
 
-def retrieve(collection, question, tickers, top_k=TOP_K):
-    """每家公司各自查詢 top_k 筆再合併，避免多公司比較時被單一公司的段落洗掉。"""
+# 問題若只點名財年（如「FY2025年報」），沒有季度（annual_report 的 metadata
+# 只有 fiscal_year，沒有 fiscal_period），同樣要鎖定該財年，避免 annual_report
+# 一份文件橫跨多個財年時，語意排序抓到同公司但不同財年的段落（例如問 FY2025
+# 的股東權益表，卻抓到 FY2024 或 FY2026 的數字）。用 (?!Q\d) 排除已被
+# _FISCAL_PERIOD_PATTERN 匹配掉的「FYxxxxQx」，避免兩個 pattern 重複配對同一個字串。
+_FISCAL_YEAR_PATTERN = re.compile(r"FY\d{4}(?!Q\d)")
+
+
+def _mentioned_fiscal_years(question):
+    return _FISCAL_YEAR_PATTERN.findall(question)
+
+
+# annual_report 一份 10-K 目前固定拆成四張報表 chunk（見
+# annual_report_parser_us10k.py 的 STATEMENTS），問題若點名其中一張，就该
+# 鎖定該張報表的 chunk，避免另外三張報表（同一財年、語意也可能沾邊，例如
+# 資產負債表跟權益變動表都會提到「保留盈餘」）一起塞進 context 干擾 LLM。
+# key 要對應 metadata 的 "statement" 欄位值；keyword 用 tuple 因為中英文/
+# 常見簡稱都要能命中（例如「股東權益表」「權益變動表」都對應 equity_statement）。
+_STATEMENT_KEYWORDS = [
+    ("balance_sheet", ("資產負債表", "balance sheet")),
+    ("income_statement", ("綜合損益表", "損益表", "income statement", "statement of operations")),
+    ("cash_flow_statement", ("現金流量表", "現金流量", "cash flow")),
+    ("equity_statement", ("權益變動表", "股東權益表", "股東權益", "statement of changes in equity", "stockholders equity")),
+]
+
+
+def _mentioned_statement(question):
+    q = question.lower()
+    for key, keywords in _STATEMENT_KEYWORDS:
+        if any(kw in question or kw in q for kw in keywords):
+            return key
+    return None
+
+
+def retrieve(collections, question, tickers, top_k=TOP_K):
+    """每個 collection、每家公司各自查詢 top_k 筆再合併。
+
+    collections 可傳單一 collection 物件或 collection 物件的 list：有些問題（如
+    「法說會展望與年報風險因子是否一致」）需要跨 collection 才能組出完整
+    context，單一 collection 查不到另一邊的資料。每個 collection 各自查詢、
+    互不影響對方的排序，理由同「每家公司各自查詢 top_k」——避免其中一個
+    collection（或公司）的段落把另一個洗掉。
+    """
+    if not isinstance(collections, (list, tuple)):
+        collections = [collections]
     recency = _is_recency_question(question)
     periods = _mentioned_fiscal_periods(question)
+    years = _mentioned_fiscal_years(question)
+    statement = _mentioned_statement(question)
     hits = []
-    for ticker in tickers:
-        where = {"ticker": ticker}
-        if recency:
-            field, latest = _latest_recency_field(collection, ticker)
-            if latest:
-                where = {"$and": [{"ticker": ticker}, {field: latest}]}
-        elif periods:
-            period_filter = (
-                {"fiscal_period": periods[0]}
-                if len(periods) == 1
-                else {"fiscal_period": {"$in": periods}}
+    for collection in collections:
+        for ticker in tickers:
+            # 時間類過濾（最新一期／指定財季／指定財年）互斥，一次只會命中一種；
+            # 報表類過濾（statement）是另一個獨立維度，兩者可同時成立（例如
+            # 「FY2025 的權益變動表」要同時鎖定財年與報表），故分開組再合併。
+            conditions = [{"ticker": ticker}]
+            if recency:
+                field, latest = _latest_recency_field(collection, ticker)
+                if latest:
+                    conditions.append({field: latest})
+            elif periods:
+                conditions.append(
+                    {"fiscal_period": periods[0]}
+                    if len(periods) == 1
+                    else {"fiscal_period": {"$in": periods}}
+                )
+            elif years:
+                conditions.append(
+                    {"fiscal_year": years[0]}
+                    if len(years) == 1
+                    else {"fiscal_year": {"$in": years}}
+                )
+            if statement:
+                conditions.append({"statement": statement})
+            where = conditions[0] if len(conditions) == 1 else {"$and": conditions}
+            res = collection.query(
+                query_texts=[question],
+                n_results=top_k,
+                where=where,
+                include=["documents", "metadatas", "distances"],
             )
-            where = {"$and": [{"ticker": ticker}, period_filter]}
-        res = collection.query(
-            query_texts=[question],
-            n_results=top_k,
-            where=where,
-            include=["documents", "metadatas", "distances"],
-        )
-        hits.extend(zip(res["ids"][0], res["documents"][0], res["metadatas"][0], res["distances"][0]))
+            hits.extend(
+                (id_, doc, meta, dist, collection.name)
+                for id_, doc, meta, dist in zip(
+                    res["ids"][0], res["documents"][0], res["metadatas"][0], res["distances"][0]
+                )
+            )
     return hits
 
 
@@ -92,7 +154,7 @@ def _format_file_reference(meta):
 
 def build_context(hits):
     blocks = []
-    for id_, doc, meta, dist in hits:
+    for id_, doc, meta, dist, collection_name in hits:
         header = (
             f"[來源: {meta.get('company_name_zh') or meta.get('ticker')}"
             f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section') or ''}"
@@ -111,7 +173,7 @@ def format_sources(hits):
     """
     seen = set()
     lines = []
-    for id_, doc, meta, dist in hits:
+    for id_, doc, meta, dist, collection_name in hits:
         # 用 chunk 自己的 id 去重（保證唯一）：原本用 (source_id, page) 組 key，
         # 但 annual_report 這類「一份文件多個 chunk、沒有 page」的來源
         # （如 10-K 的 4 張報表）共用同一個 source_id 且 page 都是空值，
