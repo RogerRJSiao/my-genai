@@ -144,9 +144,10 @@ def main():
                 matches = match_terms(candidate_terms, collections["glossary"])
         if matches:
             print()
-            # 這份 glossary 是 IFRS/US GAAP 財務會計詞彙表，不含產業/技術詞彙
-            # （例如 DRAM、CDBU 這類半導體業務用語），比對結果請以此為前提解讀。
-            print("專業術語(詞彙庫範圍：IFRS)：")
+            # glossary collection 目前收錄 IFRS/US GAAP 財務會計詞彙（tifrs_glossary_latest）
+            # 與半導體產業技術詞彙（semiconductor_glossary_latest）；仍不含公司內部業務單位
+            # 代號（如 CDBU/MCBU 這類 Micron 自訂縮寫），比對結果請以此為前提解讀。
+            print("專業術語比對：")
             for m in matches:
                 print(
                     f"  - {m['query_term']} -> {m['term_en']} / {m['term_zh']}"

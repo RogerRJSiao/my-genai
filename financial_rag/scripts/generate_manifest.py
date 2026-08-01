@@ -41,7 +41,23 @@ SOURCE_URLS = {
     ("quarterly_earningcall", "TW_2344"): "https://finmoconf.diveinvest.net",
 }
 
-GLOSSARY_SOURCE_URL = "https://www.ardf.org.tw/tifrs2.html"
+# data/raw/glossary/ 底下每個詞彙表來源、性質都不同（會計準則 vs 產業技術詞彙），
+# 不能像舊版那樣對所有 glossary 檔案套用同一組寫死的 doc_type/source_url。
+# 新增詞彙表檔案時，請在這裡補上對應項目（key 為檔名不含副檔名）。
+GLOSSARY_INFO = {
+    "tifrs_glossary_latest": {
+        "doc_type": "tifrs-glossary",
+        "language": "zh-en",
+        "accounting_standard": "T-IFRS",
+        "source_url": "https://www.ardf.org.tw/tifrs2.html",
+    },
+    "semiconductor_glossary_latest": {
+        "doc_type": "semiconductor-glossary",
+        "language": "zh-en",
+        "accounting_standard": None,
+        "source_url": "https://uedu.tw/semiconductor/glossary",
+    },
+}
 
 DATE_RE = re.compile(r"(\d{8})")
 FY_RE = re.compile(r"^FY(\d{4})(Q[1-4])?$")
@@ -50,6 +66,12 @@ FY_RE = re.compile(r"^FY(\d{4})(Q[1-4])?$")
 def parse_glossary(path):
     rel = path.relative_to(RAW_DIR)
     processed_rel = rel.with_suffix(".json")
+    if path.stem not in GLOSSARY_INFO:
+        raise ValueError(
+            f"data/raw/glossary/{path.name} 沒有對應的 GLOSSARY_INFO 設定，"
+            "請在 scripts/generate_manifest.py 補上 doc_type/source_url 等資訊"
+        )
+    info = GLOSSARY_INFO[path.stem]
     return {
         "id": path.stem,
         "raw_path": (Path("data/raw") / rel).as_posix(),
@@ -61,15 +83,15 @@ def parse_glossary(path):
         "company_name": None,
         "company_name_zh": None,
         "doc_category": "glossary",
-        "doc_type": "tifrs-glossary",
+        "doc_type": info["doc_type"],
         "file_format": path.suffix.lstrip(".").lower(),
-        "language": "zh-en",
-        "accounting_standard": "T-IFRS",
+        "language": info["language"],
+        "accounting_standard": info["accounting_standard"],
         "fiscal_year": None,
         "fiscal_period": None,
         "fiscal_period_end": None,
         "event_date": None,
-        "source_url": GLOSSARY_SOURCE_URL,
+        "source_url": info["source_url"],
         "retrieved_date": None,
         "ingestion_status": "pending",
         "chunk_count": None,

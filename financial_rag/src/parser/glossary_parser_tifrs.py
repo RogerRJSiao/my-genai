@@ -7,7 +7,7 @@
 避免現行「一頁一 chunk」的作法把每頁約 30 個詞條混在一起、稀釋語意檢索精準度。
 
 用法：
-    python -m src.parser.glossary_parser <PDF 路徑> -o <輸出 JSON 路徑>
+    python -m src.parser.glossary_parser_tifrs <PDF 路徑> -o <輸出 JSON 路徑>
 """
 import argparse
 import json

@@ -3,19 +3,24 @@
 src/rag/retriever.py 的語意檢索是「找相關」，適合模糊查詢；但翻譯校對這種
 情境需要「找到官方確切用詞」，語意最近的向量結果不保證就是正確譯名（bge-m3
 可能把語意相近但用詞不同的條目排在前面）。這裡直接讀取
-data/processed/parsed/glossary/tifrs_glossary_latest.json 解析出的詞條清單
-做字典查詢，不吃 ChromaDB，適合翻譯校對/術語一致性檢查這類需要 100% 準確度
-的場景。
+data/processed/parsed/glossary/ 底下每一份詞彙表解析出的詞條清單做字典查詢，
+不吃 ChromaDB，適合翻譯校對/術語一致性檢查這類需要 100% 準確度的場景。
+
+新增詞彙表時（例如未來再加一份產業別詞彙表）只要把解析後的 JSON 放進同一個
+目錄，這裡會自動一併載入，不需要另外修改程式。
 """
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-GLOSSARY_PATH = ROOT / "data" / "processed" / "parsed" / "glossary" / "tifrs_glossary_latest.json"
+GLOSSARY_DIR = ROOT / "data" / "processed" / "parsed" / "glossary"
 
 
 def _load_terms():
-    return json.loads(GLOSSARY_PATH.read_text(encoding="utf-8"))
+    terms = []
+    for path in sorted(GLOSSARY_DIR.glob("*.json")):
+        terms.extend(json.loads(path.read_text(encoding="utf-8")))
+    return terms
 
 
 _TERMS = _load_terms()

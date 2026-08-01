@@ -399,7 +399,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 30,
-      "ingested_at": "2026-08-01T08:38:58.897784+00:00"
+      "ingested_at": "2026-08-01T09:30:21.497263+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q2_20250806",
@@ -424,7 +424,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 23,
-      "ingested_at": "2026-08-01T08:39:01.733958+00:00"
+      "ingested_at": "2026-08-01T09:30:24.436035+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q3_20251105",
@@ -449,7 +449,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 32,
-      "ingested_at": "2026-08-01T08:39:04.900241+00:00"
+      "ingested_at": "2026-08-01T09:30:27.650200+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2025Q4_20260210",
@@ -474,7 +474,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 17,
-      "ingested_at": "2026-08-01T08:39:07.785029+00:00"
+      "ingested_at": "2026-08-01T09:30:30.612298+00:00"
     },
     {
       "id": "TW_2344_investor-conference_FY2026Q1_20260505",
@@ -499,7 +499,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 21,
-      "ingested_at": "2026-08-01T08:39:10.594558+00:00"
+      "ingested_at": "2026-08-01T09:30:33.362744+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q1_20250410",
@@ -524,7 +524,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 9,
-      "ingested_at": "2026-08-01T08:39:13.362781+00:00"
+      "ingested_at": "2026-08-01T09:30:36.118349+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q2_20250710",
@@ -549,7 +549,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 9,
-      "ingested_at": "2026-08-01T08:39:16.164925+00:00"
+      "ingested_at": "2026-08-01T09:30:38.891950+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q3_20251013",
@@ -574,7 +574,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 10,
-      "ingested_at": "2026-08-01T08:39:18.848097+00:00"
+      "ingested_at": "2026-08-01T09:30:41.546976+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2025Q4_20260119",
@@ -599,7 +599,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 13,
-      "ingested_at": "2026-08-01T08:39:21.514486+00:00"
+      "ingested_at": "2026-08-01T09:30:44.221987+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2026Q1_20260413",
@@ -624,7 +624,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 14,
-      "ingested_at": "2026-08-01T08:39:24.472485+00:00"
+      "ingested_at": "2026-08-01T09:30:47.124301+00:00"
     },
     {
       "id": "TW_2408_investor-conference_FY2026Q2_20260710",
@@ -649,7 +649,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 12,
-      "ingested_at": "2026-08-01T08:39:27.261250+00:00"
+      "ingested_at": "2026-08-01T09:30:49.957407+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q1_20241218",
@@ -674,7 +674,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 31,
-      "ingested_at": "2026-08-01T08:39:30.127949+00:00"
+      "ingested_at": "2026-08-01T09:30:52.715423+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q2_20250320",
@@ -699,7 +699,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 34,
-      "ingested_at": "2026-08-01T08:39:32.925622+00:00"
+      "ingested_at": "2026-08-01T09:30:55.516792+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q3_20250625",
@@ -724,7 +724,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 35,
-      "ingested_at": "2026-08-01T08:39:35.782038+00:00"
+      "ingested_at": "2026-08-01T09:30:58.371239+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2025Q4_20250923",
@@ -749,7 +749,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 46,
-      "ingested_at": "2026-08-01T08:39:38.868081+00:00"
+      "ingested_at": "2026-08-01T09:31:01.428167+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2026Q1_20251217",
@@ -774,7 +774,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 39,
-      "ingested_at": "2026-08-01T08:39:41.882052+00:00"
+      "ingested_at": "2026-08-01T09:31:04.440046+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2026Q2_20260318",
@@ -799,7 +799,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 40,
-      "ingested_at": "2026-08-01T08:39:44.906126+00:00"
+      "ingested_at": "2026-08-01T09:31:07.433089+00:00"
     },
     {
       "id": "US_MU_earning-deck_FY2026Q3_20260624",
@@ -824,7 +824,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 39,
-      "ingested_at": "2026-08-01T08:39:47.902715+00:00"
+      "ingested_at": "2026-08-01T09:31:10.405407+00:00"
     },
     {
       "id": "US_MU_prepared-remarks_FY2025Q1_20241218",
@@ -1002,6 +1002,31 @@
       "ingested_at": null
     },
     {
+      "id": "semiconductor_glossary_latest",
+      "raw_path": "data/raw/glossary/semiconductor_glossary_latest.md",
+      "parsed_path": "data/processed/parsed/glossary/semiconductor_glossary_latest.json",
+      "chunks_path": "data/processed/chunks/glossary/semiconductor_glossary_latest.json",
+      "collection": "glossary",
+      "market": null,
+      "ticker": null,
+      "company_name": null,
+      "company_name_zh": null,
+      "doc_category": "glossary",
+      "doc_type": "semiconductor-glossary",
+      "file_format": "md",
+      "language": "zh-en",
+      "accounting_standard": null,
+      "fiscal_year": null,
+      "fiscal_period": null,
+      "fiscal_period_end": null,
+      "event_date": null,
+      "source_url": "https://uedu.tw/semiconductor/glossary",
+      "retrieved_date": null,
+      "ingestion_status": "ingested",
+      "chunk_count": 53,
+      "ingested_at": "2026-08-01T09:32:21.956705+00:00"
+    },
+    {
       "id": "tifrs_glossary_latest",
       "raw_path": "data/raw/glossary/tifrs_glossary_latest.pdf",
       "parsed_path": "data/processed/parsed/glossary/tifrs_glossary_latest.json",
@@ -1024,7 +1049,7 @@
       "retrieved_date": null,
       "ingestion_status": "ingested",
       "chunk_count": 1949,
-      "ingested_at": "2026-08-01T08:44:32.694277+00:00"
+      "ingested_at": "2026-08-01T09:31:34.088158+00:00"
     }
   ]
 }
