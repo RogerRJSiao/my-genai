@@ -26,8 +26,24 @@ conda create -n financial_rag python=3.11 -y
 conda activate financial_rag
 
 # 3. 安裝專案核心套件
-pip install ollama
+pip install ollama chromadb pdfplumber
 ```
+
+<details>
+<summary>📦 套件選擇：為何 PDF 解析選 pdfplumber 而非 PyMuPDF (fitz)</summary>
+
+| 面向 | pdfplumber [現況] | PyMuPDF (fitz) |
+| --- | --- | --- |
+| 表格偵測 | 原生 `find_tables()`，已針對本專案財報投影片的誤判情況（裝飾邊框、圖表視覺網格）大量客製化調校 | 也有 `find_tables()`，但策略較新、跟 pdfplumber 不同，需重新驗證 |
+| 文字＋座標存取 | object-level 存取（chars/words/rects 皆有精確 bbox），`page.filter()`／`extract_text_lines()` 是為了「排除某區域再取文字」設計的，現有三層擷取邏輯（圖表/表格/純文字）都建立在這個模型上 | `get_text("dict")` 提供類似資訊，但物件模型完全不同（巢狀 blocks/lines/spans vs pdfplumber 的扁平 dict），現有邏輯要整套重寫 |
+| 速度 | 純 Python（基於 pdfminer.six），批次處理較慢 | C 底層（MuPDF），明顯更快 |
+| 裁圖給 Vision model | `page.crop(bbox).to_image(resolution=...)` 已可直接輸出 `PIL.Image`，依賴為 `pdfminer.six/Pillow/pypdfium2`，**皆為 pip 套件，不需額外系統執行檔** | `page.get_pixmap(clip=fitz.Rect(...))` 同樣方便；兩者 bbox 座標系相容（皆為左上原點的 PDF points），可直接互通不需轉換 |
+| 授權 | MIT 系列，寬鬆 | AGPL（商用需買 license） |
+
+當接上 Vision model 時，直接用 pdfplumber 的 `crop().to_image()` 裁圖即可；若日後真的遇到
+裁圖品質/速度的具體問題，可考慮只在裁圖這個函式局部引入 PyMuPDF，而非整層替換。
+
+</details>
 
 ## 🧪 3. Python API 基礎測試 (Step 2 驗證腳本)
 
