@@ -71,7 +71,32 @@ def build_context(hits):
     for id_, doc, meta, dist in hits:
         header = (
             f"[來源: {meta.get('company_name_zh') or meta.get('ticker')}"
-            f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section')}]"
+            f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} / {meta.get('section')}"
+            f" / 檔案: {meta.get('source_id')}.pdf 第{meta.get('page')}頁]"
         )
         blocks.append(f"{header}\n{doc}")
     return "\n\n".join(blocks)
+
+
+def format_sources(hits):
+    """把實際檢索到的段落組成引用來源清單（依 metadata 直接產生，不假手 LLM 覆述）。
+
+    LLM 對「回答最後照抄引用格式」這類附加指令的遵從度不穩定，容易漏引用或
+    自行編造頁碼；引用來源本來就是檢索結果的已知資訊，直接在這裡組字串
+    比較可靠。呼叫方應把回傳值接在 LLM 回答後面顯示，而非要求 LLM 自己生成。
+    """
+    seen = set()
+    lines = []
+    for id_, doc, meta, dist in hits:
+        key = (meta.get("source_id"), meta.get("page"))
+        if key in seen:
+            continue
+        seen.add(key)
+        lines.append(
+            f"- {meta.get('company_name_zh') or meta.get('ticker')}"
+            f"（{meta.get('ticker')}） {meta.get('fiscal_period') or meta.get('fiscal_year')} /"
+            f" {meta.get('section')} / {meta.get('source_id')}.pdf 第{meta.get('page')}頁"
+        )
+    if not lines:
+        return ""
+    return "引用來源：\n" + "\n".join(lines)

@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT))
 from src.database.chroma_client import get_client, get_collection  # noqa: E402
 from src.rag.generator import generate_answer  # noqa: E402
 from src.rag.query_resolver import resolve_tickers  # noqa: E402
-from src.rag.retriever import build_context, retrieve  # noqa: E402
+from src.rag.retriever import build_context, format_sources, retrieve  # noqa: E402
 
 # 人工準備的測試題，expected 只是提示，需自行對照原始 PDF 核對正確性
 # tickers 可放多家公司代碼：每家公司各自檢索 top_k，保證每家都有結果進 context，
@@ -122,6 +122,11 @@ def main():
         print("-" * 70)
         print("LLM 回答：")
         print(answer)
+        # 引用來源由 retriever 依實際檢索結果組出，不假手 LLM 覆述。
+        sources = format_sources(hits)
+        if sources:
+            print()
+            print(sources)
         print()
 
 
