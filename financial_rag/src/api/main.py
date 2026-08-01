@@ -9,7 +9,9 @@
     uvicorn src.api.main:app --reload --port 8000
 
 啟動後可用瀏覽器開 http://127.0.0.1:8000/docs 直接測試（Swagger UI），
-或參考 scripts/test_api.py 的自動化測試方式。
+或參考 scripts/test_api.py 的自動化測試方式。使用者輸入介面則是
+http://127.0.0.1:8000/ 的靜態頁面（static/index.html，純 HTML+JS 呼叫
+下面的 /query，不需要額外的前端服務或套件）。
 """
 import sys
 from pathlib import Path
@@ -19,6 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
 from fastapi import FastAPI, HTTPException  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 from src.database.chroma_client import COLLECTIONS, get_client, get_collection  # noqa: E402
@@ -129,3 +132,10 @@ def query(request: QueryRequest):
         sources=sources,
         glossary_matches=matches,
     )
+
+
+# 靜態頁面掛在最後：StaticFiles 掛在 "/" 會接住所有沒被前面路由（/health、
+# /query、/docs）匹配到的路徑，html=True 讓 "/" 自動回傳 static/index.html。
+# 掛載順序必須在其他路由之後，不然會反過來蓋掉 /health、/query。
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
+app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="static")

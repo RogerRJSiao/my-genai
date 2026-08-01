@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>財報 RAG 問答</title>
+<style>
+  :root {
+    color-scheme: light dark;
+  }
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: 1.4rem;
+  }
+  label {
+    display: block;
+    margin-top: 1rem;
+    font-weight: 600;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  textarea {
+    min-height: 4.5rem;
+    resize: vertical;
+  }
+  .checkboxes {
+    font-weight: normal;
+    margin-top: 0.25rem;
+  }
+  .checkboxes label {
+    display: inline-block;
+    font-weight: normal;
+    margin-right: 1.5rem;
+    margin-top: 0;
+  }
+  button {
+    margin-top: 1.25rem;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  #result {
+    margin-top: 2rem;
+    white-space: pre-wrap;
+  }
+  #result h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  .sources, .glossary {
+    font-size: 0.9rem;
+    opacity: 0.85;
+  }
+  .glossary table {
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+  }
+  .glossary td, .glossary th {
+    border: 1px solid currentColor;
+    padding: 0.25rem 0.6rem;
+    opacity: 0.85;
+  }
+  .error {
+    color: #c0392b;
+  }
+  .hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    font-weight: normal;
+  }
+  .examples {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 0.4rem;
+  }
+  .example-btn {
+    margin: 0 0.3rem 0 0;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.85rem;
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    opacity: 0.85;
+  }
+  .answer {
+    background-color: #f5ecd7;
+    color: #2b2b2b;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .answer {
+      background-color: #6b5d3f;
+      color: #f5ecd7;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>📈 財報 RAG 問答</h1>
+  <p class="hint">檢索財報段落，用繁體中文回答；資料涵蓋範圍見專案 README。</p>
+
+  <form id="query-form">
+    <label for="question">問題</label>
+    <textarea id="question" required placeholder="例如：美光FY2025年報的股東權益表中，資本公積與保留盈餘分別是多少？"></textarea>
+    <div class="examples">
+      範例：
+      <button type="button" class="example-btn" data-question="華邦電最近一季法說會提到哪些重點？">法說會重點</button>
+      <button type="button" class="example-btn" data-question="美光FY2025年報的股東權益表中，資本公積與保留盈餘分別是多少？">股東權益表</button>
+      <button type="button" class="example-btn" data-question="南亞科與華邦電在2024年度財報中，現金流量的期末結餘分別是多少？">現金流量表</button>
+    </div>
+
+    <label>
+      公司代碼 <span class="hint">（選填，未勾選則自動從問題解析）</span>
+      <span class="checkboxes">
+        <label><input type="checkbox" name="ticker" value="MU" /> 美光 (MU)</label>
+        <label><input type="checkbox" name="ticker" value="2408" /> 南亞科 (2408)</label>
+        <label><input type="checkbox" name="ticker" value="2344" /> 華邦電 (2344)</label>
+      </span>
+    </label>
+
+    <label>
+      財年／財季 <span class="hint">（選填，會補進問題文字裡鎖定該財季，未選則由語意檢索自行判斷）</span>
+      <span class="checkboxes">
+        <select id="fiscal-year">
+          <option value="">年度不指定</option>
+          <option value="FY2021">FY2021</option>
+          <option value="FY2022">FY2022</option>
+          <option value="FY2023">FY2023</option>
+          <option value="FY2024">FY2024</option>
+          <option value="FY2025">FY2025</option>
+          <option value="FY2026">FY2026</option>
+        </select>
+        <select id="fiscal-quarter">
+          <option value="">季度不指定</option>
+          <option value="Q1">Q1</option>
+          <option value="Q2">Q2</option>
+          <option value="Q3">Q3</option>
+          <option value="Q4">Q4</option>
+        </select>
+      </span>
+    </label>
+
+    <label>
+      檢索範圍 <span class="hint">（預設兩種都查）</span>
+      <span class="checkboxes">
+        <label><input type="checkbox" name="collection" value="quarterly_earningcall" checked /> 法說會資料</label>
+        <label><input type="checkbox" name="collection" value="annual_report" checked /> 財務報表</label>
+      </span>
+    </label>
+
+    <button type="submit" id="submit-btn">送出</button>
+  </form>
+
+  <div id="result"></div>
+
+<script>
+const form = document.getElementById("query-form");
+const submitBtn = document.getElementById("submit-btn");
+const resultEl = document.getElementById("result");
+
+function escapeHtml(s) {
+  const div = document.createElement("div");
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+document.querySelectorAll(".example-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.getElementById("question").value = btn.dataset.question;
+  });
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  let question = document.getElementById("question").value.trim();
+  if (!question) return;
+
+  // retriever.py 用正則表達式從問題文字裡找 "FY2026Q3"（財季）或 "FY2025"
+  // （財年，且後面不能接 Qx）來鎖定資料範圍，不是走額外的 API 參數；下拉選單
+  // 選的財年/財季直接組成同樣格式的字串，補進送出的問題文字裡（不改動使用者
+  // 看到的輸入框內容）。季度只在有選年度時才附加，單獨選季度沒有意義。
+  const fiscalYear = document.getElementById("fiscal-year").value;
+  const fiscalQuarter = document.getElementById("fiscal-quarter").value;
+  if (fiscalYear) {
+    question += ` ${fiscalYear}${fiscalQuarter}`;
+  }
+
+  const tickers = Array.from(document.querySelectorAll('input[name="ticker"]:checked')).map(
+    (el) => el.value
+  );
+
+  const collections = Array.from(document.querySelectorAll('input[name="collection"]:checked')).map(
+    (el) => el.value
+  );
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "查詢中…（LLM 生成通常需要數秒到十幾秒）";
+  resultEl.innerHTML = "";
+
+  try {
+    const resp = await fetch("/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question,
+        tickers,
+        collections: collections.length ? collections : null,
+      }),
+    });
+    const body = await resp.json();
+
+    if (!resp.ok) {
+      resultEl.innerHTML = `<p class="error">錯誤（${resp.status}）：${escapeHtml(body.detail ?? JSON.stringify(body))}</p>`;
+      return;
+    }
+
+    let html = `<h2>回答</h2><div class="answer">${escapeHtml(body.answer)}</div>`;
+    if (body.sources) {
+      html += `<div class="sources">${escapeHtml(body.sources)}</div>`;
+    }
+    if (body.glossary_matches && body.glossary_matches.length) {
+      html += `<div class="glossary"><strong>專業術語比對：</strong><table>
+        <tr><th>問題用詞</th><th>English</th><th>中文</th><th>distance</th></tr>`;
+      for (const m of body.glossary_matches) {
+        html += `<tr><td>${escapeHtml(m.query_term)}</td><td>${escapeHtml(m.term_en ?? "")}</td><td>${escapeHtml(m.term_zh ?? "")}</td><td>${m.distance.toFixed(4)}</td></tr>`;
+      }
+      html += `</table></div>`;
+    }
+    resultEl.innerHTML = html;
+  } catch (err) {
+    resultEl.innerHTML = `<p class="error">連線失敗：${escapeHtml(String(err))}</p>`;
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "送出";
+  }
+});
+</script>
+</body>
+</html>
