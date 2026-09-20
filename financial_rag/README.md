@@ -100,12 +100,35 @@ python tests/test_ollama.py
 [API 階段]     FastAPI 封裝 retriever/generator 為 HTTP 服務
       │        先有可呼叫的服務，才有東西值得裝進容器
       ▼
-[部署階段]     Docker Container + Nvidia Container Toolkit (實現開發即部署)
+[部署階段]     Docker Container（api）+ 主機 Ollama（GPU 直通沿用主機設定）
 ```
 
 - **開發階段（當前）**：使用 Anaconda 虛擬環境開發，依賴已整理成 [requirements.txt](requirements.txt)（只列專案程式碼直接 import 的套件並釘死版本，不用 `pip freeze` 整包匯出，避免把尚未真正使用的套件也一併凍結進去，見套件選型章節）。目前 RAG 鏈路只能透過腳本呼叫，還沒有對外服務介面。
 - **API 階段（已完成）**：用 FastAPI 把 `src/rag/retriever.py`／`generator.py` 封裝成 HTTP 端點（`src/api/main.py`），並附上瀏覽器端查詢頁面（`src/api/static/index.html`）方便手動測試，這是比直接上 Docker 更優先的一步——Docker 只負責把「已存在的服務」打包成可攜的部署單位，本身不會憑空產生服務能力；容器化一個沒有對外介面的腳本沒有實質效益。
-- **部署階段（下一步）**：等 FastAPI 服務就緒後，採用 Docker + Docker Compose 架構，將 Python 後端（FastAPI）、向量資料庫（如 ChromaDB / Qdrant）與 Ollama 容器化，可快速部署至任何 Linux / 雲端伺服器。
+- **部署階段（已完成）**：[Dockerfile](Dockerfile) 把 FastAPI 服務打包成映像檔，[docker-compose.yml](docker-compose.yml) 只有 `api` 一個 service；Ollama 不跑在容器裡，而是沿用主機（Windows 端）已經在跑、且已預先 `ollama pull` 過模型的 Ollama，容器透過 `host.docker.internal` 連過去（`OLLAMA_HOST`／`OLLAMA_URL` 環境變數指向 `http://host.docker.internal:11434`，見 `src/database/chroma_client.py`）。這樣可以直接沿用主機已下載的模型，不用在容器裡重新下載一次。ChromaDB 本身是 `PersistentClient` 內嵌式落地存取（非獨立伺服器），所以不需要另外的向量資料庫容器，把 `data/` 掛成 volume 即可。
+
+<details>
+<summary>🐳 Docker 使用方式</summary>
+
+```bash
+# 0. 確認主機（Windows 端）Ollama 服務已啟動，且已下載本專案用到的兩顆模型（見 §1 模型配置表）
+ollama pull jcai/llama-3-taiwan-8b-instruct:q4_k_m
+ollama pull bge-m3
+
+# 1. 建置映像並啟動 api service（容器透過 host.docker.internal 連到主機的 Ollama）
+docker compose up -d --build
+
+# 2a. 若已經有現成的 data/chroma_db/，直接掛上來就能查詢，跳過 2b
+# 2b. 若要在容器內重新建立向量資料庫（data/raw、data/manifest.json 需先備妥）
+docker compose exec api python scripts/ingest_data.py
+
+# 3. 驗證：Swagger UI 開 http://localhost:8000/docs，或跑自動化 smoke test
+docker compose exec api python scripts/test_api.py
+```
+
+GPU 加速：由於推論是透過主機的 Ollama 進行，GPU 直通沿用主機既有設定即可，不需要在容器內另外設定 Nvidia Container Toolkit；沒有 GPU 時，主機端 Ollama 會退回 CPU 推論，回應時間會明顯變長。
+
+</details>
 
 <details>
 <summary>✅ RAG 專案部署階段必要流程 (Deployment Checklist)</summary>
@@ -117,7 +140,7 @@ python tests/test_ollama.py
    pip install -r requirements.txt
    ```
 
-2. **準備 Ollama 模型**：部署環境需要能存取 GPU 的 Ollama 服務，並預先下載本專案用到的兩顆模型（見 §1 模型配置表）：
+2. **準備 Ollama 模型**：Ollama 跑在主機（不在容器裡），部署環境需要能存取 GPU 的 Ollama 服務常駐執行，並預先下載本專案用到的兩顆模型（見 §1 模型配置表）：
    ```bash
    ollama pull jcai/llama-3-taiwan-8b-instruct:q4_k_m
    ollama pull bge-m3
@@ -133,7 +156,7 @@ python tests/test_ollama.py
    - **重新跑一次 pipeline**（適合資料有變動時）：`generate_manifest.py` → 對每份新文件跑 `page_filter.py`／`chunker.py` → `ingest_data.py`（詳見 [docs/manifest_schema.md](docs/manifest_schema.md) 的 SOP）
    - **直接帶著現有的 `data/chroma_db/` 一起部署**（適合資料沒變、只是換環境時），省去重新處理耗時的 PDF 解析與 embedding
 
-5. **GPU passthrough**：容器化部署時需要 Nvidia Container Toolkit，讓 Ollama 容器內的 LLM／embedding 推論能存取 GPU，否則會退回 CPU 造成回應時間大幅增加。
+5. **GPU 存取**：Ollama 跑在主機上（不在容器裡），只要主機端 Ollama 能正常存取 GPU 即可，不需要另外設定 Nvidia Container Toolkit；若主機沒有 GPU，Ollama 會退回 CPU 推論，回應時間會明顯增加。
 
 6. **部署前健康檢查（smoke test）**：跑 [scripts/test_rag_chain.py](scripts/test_rag_chain.py) 的 golden set，確認 Ollama 模型、ChromaDB 連線、檢索結果都正常，再讓服務正式對外。
 
@@ -266,5 +289,5 @@ python scripts/generate_manifest.py
 - [x] Step 4：檢索鏈路串接（RAG Chain），實現英文檢索與繁體中文回答（`src/rag/retriever.py`／`generator.py`，驗證腳本 [scripts/test_rag_chain.py](scripts/test_rag_chain.py)）。
 - [x] Step 5：財會中英術語比對（`glossary_matcher.py`／`glossary_lookup.py`），橋接中文提問與英文財報用語。
 - [x] Step 6：FastAPI 封裝 RAG 鏈路為 HTTP 服務，含瀏覽器端查詢頁面與自動化 smoke test（`src/api/main.py`／`src/api/static/index.html`，驗證腳本 [scripts/test_api.py](scripts/test_api.py)）。
-- [ ] Step 7：（下一階段）Docker Container 化部署，待 Step 6 的服務介面就緒後才有意義。
+- [x] Step 7：Docker Container 化部署（[Dockerfile](Dockerfile)／[docker-compose.yml](docker-compose.yml)，僅 `api` service 容器化，Ollama 沿用主機服務並透過 `host.docker.internal` 連線，向量資料庫沿用內嵌式 ChromaDB，掛 `data/` volume 持久化）。
 - [ ] Step 8：（下一階段，優先度較低）Vision model 串接，讀取圖表內容（目前 `charts` 欄位僅記錄座標，見 `page_filter.py`）。
