@@ -1,0 +1,19 @@
+services:
+  # 未使用容器化的 ollama service，改連本機（Windows 端）已在跑的 Ollama。
+  # 若要改回容器化 Ollama，可參考 git 歷史還原這個 service 區塊。
+
+  api:
+    build: .  # 沒有現成的映象檔，須按照根目錄的 Dockerfile 自己建置
+    container_name: financial_rag_api
+    environment:
+      # 讓容器連到本機（Windows 端）的 Ollama，沿用本機已 pull 的模型。
+      # 若本機還沒有模型，先在本機執行 ollama pull（見 README §1 模型配置表）。
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      - OLLAMA_URL=http://host.docker.internal:11434
+    ports:
+      - "8000:8000"
+    volumes:
+      # data/chroma_db 是向量索引的落地檔案，掛成 volume 才能在重建容器後保留；
+      # data/raw、data/processed 供容器內執行 scripts/ingest_data.py 時讀寫。
+      - ./data:/app/data
+    restart: unless-stopped

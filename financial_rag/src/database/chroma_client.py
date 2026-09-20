@@ -9,6 +9,7 @@ DB_PATH 底下的落地檔案：
   data_level0.bin 存實際向量，header.bin/length.bin 記錄維度與筆數，link_lists.bin 是上層圖連結。
 簡言之：sqlite3 存「是什麼內容」，UUID 資料夾存「向量與相似度索引」。
 """
+import os
 from pathlib import Path
 
 import chromadb
@@ -18,7 +19,10 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 DB_PATH = ROOT / "data" / "chroma_db"
 
 COLLECTIONS = ("annual_report", "quarterly_earningcall", "glossary")
-OLLAMA_URL = "http://localhost:11434"
+# 容器化後 Ollama 不一定跑在 localhost（docker-compose 裡的 api service
+# 透過 host.docker.internal 連到主機的 Ollama），改用環境變數 OLLAMA_URL
+# 覆寫，本機開發沒設定時維持原本行為。
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 EMBEDDING_MODEL = "bge-m3:latest"
 
 

@@ -1,0 +1,10 @@
+data/
+docs/
+images/
+tests/
+.git/
+.vscode/
+__pycache__/
+*.pyc
+.pytest_cache/
+README.md
