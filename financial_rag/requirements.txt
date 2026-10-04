@@ -1,4 +1,4 @@
-# 專案程式碼實際 import 的第三方套件（見 README.md §2），只列直接依賴、
+# 專案程式碼實際 import 的第三方套件（見 README.md §5-5），只列直接依賴、
 # 由 pip 自行解析其餘 transitive 依賴版本。
 #
 # 刻意不用 `pip freeze` 整包匯出：目前環境裡還裝著幾個尚未真正使用的套件
@@ -8,6 +8,7 @@
 ollama==0.6.2
 chromadb==1.5.9
 pdfplumber==0.11.10
+beautifulsoup4==4.15.0  # annual_report_parser_us10k.py 解析 SEC 10-K HTML
 fastapi==0.141.1
 uvicorn==0.51.0
 httpx==0.28.1  # fastapi.testclient.TestClient 依賴，供 scripts/test_api.py 使用
