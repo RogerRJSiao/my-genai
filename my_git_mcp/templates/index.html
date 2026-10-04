@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Issue / MR 摘要</title>
+  <style>
+    body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; color: #1b1f23; }
+    form { display: flex; gap: 8px; margin-bottom: 24px; }
+    input[type=text] { flex: 1; padding: 8px; font-size: 14px; }
+    button { padding: 8px 16px; font-size: 14px; cursor: pointer; }
+    .error { color: #cf222e; padding: 12px; background: #ffebe9; border-radius: 6px; }
+    .card { border: 1px solid #d0d7de; border-radius: 6px; padding: 16px; }
+    .card h2 { margin-top: 0; }
+    .meta { color: #57606a; font-size: 13px; margin-bottom: 12px; }
+    .section { margin-top: 16px; }
+    .section h3 { font-size: 13px; text-transform: uppercase; color: #57606a; margin-bottom: 4px; }
+    .labels span { display: inline-block; background: #ddf4ff; color: #0969da; border-radius: 12px; padding: 2px 10px; font-size: 12px; margin-right: 6px; }
+    .desc { white-space: pre-wrap; font-size: 14px; line-height: 1.5; }
+    .state { font-weight: bold; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <h1>Issue / MR 摘要</h1>
+  <form method="get" action="/">
+    <input type="text" name="url" placeholder="貼上 GitHub issue/PR 或 GitLab issue/MR 連結" value="{{ url }}">
+    <button type="submit">查詢</button>
+  </form>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if summary %}
+    <div class="card">
+      <h2>{{ summary.title }}</h2>
+      <div class="meta">
+        {{ summary.platform }} · {{ summary.type }} ·
+        <span class="state">{{ summary.state }}</span> ·
+        作者 {{ summary.author }} · 建立於 {{ summary.created_at }}
+      </div>
+
+      {% if summary.labels %}
+      <div class="section labels">
+        <h3>標籤</h3>
+        {% for label in summary.labels %}<span>{{ label }}</span>{% endfor %}
+      </div>
+      {% endif %}
+
+      {% if summary.assignees %}
+      <div class="section">
+        <h3>負責人</h3>
+        {{ summary.assignees | join(", ") }}
+      </div>
+      {% endif %}
+
+      {% if summary.extra %}
+      <div class="section">
+        <h3>變更統計</h3>
+        {% for k, v in summary.extra.items() %}{{ k }}: {{ v }}&nbsp;&nbsp;{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="section">
+        <h3>描述</h3>
+        <div class="desc">{{ summary.description }}</div>
+      </div>
+
+      <div class="section">
+        <h3>討論留言數</h3>
+        {{ summary.comments_count }}
+      </div>
+
+      <div class="section">
+        <a href="{{ summary.url }}" target="_blank">在 {{ summary.platform }} 開啟原始頁面 →</a>
+      </div>
+    </div>
+  {% endif %}
+</body>
+</html>
